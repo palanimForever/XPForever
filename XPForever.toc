@@ -1,0 +1,23 @@
+## Interface: 16001
+## Title: XPForever |cff9966ffby Palanim|r
+## Notes: Improved experience bar with rested XP, quest XP and level-up forecast.
+## Notes-deDE: Verbesserte XP-Leiste mit Erholungs-XP, Quest-XP und Levelprognose.
+## Author: Palanim
+## Category: Quests
+## Category-deDE: Quests
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## Version: 0.3.0-dev
+## SavedVariables: XPForeverDB
+## SavedVariablesPerCharacter: XPForeverCharDB
+## OptionalDeps: LibDBIcon-1.0
+
+embeds.xml
+
+Locale.lua
+Core.lua
+Stats.lua
+Text.lua
+Bar.lua
+InfoText.lua
+MinimapButton.lua
+Options.lua

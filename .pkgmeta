@@ -1,0 +1,7 @@
+# BigWigs Packager: baut das Release-ZIP und lädt es hoch (siehe .github/workflows/release.yml).
+package-as: XPForever
+
+ignore:
+  - README.md
+  - .github
+  - .luacheckrc
