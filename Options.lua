@@ -254,14 +254,24 @@ end
 function Options:ShowStylePrompt()
     local prompt = self.stylePrompt
     if not prompt then
-        prompt = CreateFrame("Frame", "XPForeverStylePrompt", UIParent, "DialogBorderTemplate")
+        prompt = CreateFrame("Frame", "XPForeverStylePrompt", UIParent)
         prompt:SetSize(PROMPT_WIDTH, PROMPT_HEIGHT)
         prompt:SetPoint("TOP", 0, -140)
         prompt:SetFrameStrata("DIALOG")
         prompt:SetToplevel(true)
         prompt:EnableMouse(true)
 
-        local title = prompt:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        -- Blizzards Dialograhmen als Kind-Element: Die Vorlage nutzt setAllPoints und würde ein Fenster,
+        -- das sie direkt erbt, auf Bildschirmgröße ziehen.
+        local border = CreateFrame("Frame", nil, prompt, "DialogBorderTemplate")
+        border:SetAllPoints()
+        border:SetFrameLevel(prompt:GetFrameLevel())
+        -- Texte auf eigener Ebene über dem Rahmenhintergrund.
+        local content = CreateFrame("Frame", nil, prompt)
+        content:SetAllPoints()
+        content:SetFrameLevel(border:GetFrameLevel() + 5)
+
+        local title = content:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
         title:SetPoint("TOP", 0, -20)
         title:SetText(addonName)
 
@@ -278,7 +288,7 @@ function Options:ShowStylePrompt()
             prompt.buttons[entry[1]] = button
         end
 
-        local hint = prompt:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+        local hint = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
         hint:SetPoint("TOP", 0, -92)
         hint:SetText(L.stylePromptHint)
 

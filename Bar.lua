@@ -75,7 +75,11 @@ local function UseAtlasFill(tex, atlas, color, alpha, desaturate)
     tex:SetAtlas(atlas)
     tex.atlas = info
     tex:SetDesaturated(desaturate or false)
+    -- Den Farbverlauf des modernen Stils ausdrücklich durch eine einheitliche Farbe ersetzen,
+    -- sonst bleibt seine Abdunkelung auf Blizzards Textur liegen.
     local r, g, b = color:GetRGB()
+    local flat = CreateColor(r, g, b, alpha)
+    tex:SetGradient("VERTICAL", flat, flat)
     tex:SetVertexColor(r, g, b, alpha)
 end
 
