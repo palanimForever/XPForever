@@ -122,7 +122,11 @@ local function HideBlizzardBar()
         if bar then
             bar:SetAlpha(0)
             bar:EnableMouse(false)
-            if bar.ExhaustionTick then bar.ExhaustionTick:EnableMouse(false) end
+            -- Blizzards Erholungs-Marker eigens ausblenden: Er bleibt sonst sichtbar und kennt keine Quest-XP.
+            if bar.ExhaustionTick then
+                bar.ExhaustionTick:EnableMouse(false)
+                bar.ExhaustionTick:SetAlpha(0)
+            end
         end
     end
 end
@@ -153,25 +157,26 @@ end
 -- Animiert wird nur das Alpha des Frames: Alpha-Animationen direkt auf Texturen mit
 -- SetGradient färbten diese weiß (siehe Wiki).
 local function CreateRestGlow(f)
+    -- Position setzt Bar:Anchor: modern um unsere Leiste, classic um Blizzards Rahmen.
     local restGlow = CreateFrame("Frame", nil, f)
     restGlow:SetAllPoints()
     restGlow:Hide()
 
-    -- Goldene Rahmenkanten genau über dem Bronze-Rand.
-    CreateEdges(restGlow, f, BORDER, COLORS.restGlow, "OVERLAY")
+    -- Goldene Rahmenkanten genau über dem Rand.
+    CreateEdges(restGlow, restGlow, BORDER, COLORS.restGlow, "OVERLAY")
 
     local r, g, b = COLORS.restGlow:GetRGB()
     local glowTop = restGlow:CreateTexture(nil, "BACKGROUND")
     glowTop:SetTexture(WHITE)
-    glowTop:SetPoint("BOTTOMLEFT", f, "TOPLEFT")
-    glowTop:SetPoint("BOTTOMRIGHT", f, "TOPRIGHT")
+    glowTop:SetPoint("BOTTOMLEFT", restGlow, "TOPLEFT")
+    glowTop:SetPoint("BOTTOMRIGHT", restGlow, "TOPRIGHT")
     glowTop:SetHeight(GLOW_SIZE)
     glowTop:SetGradient("VERTICAL", CreateColor(r, g, b, 0.35), CreateColor(r, g, b, 0))
 
     local glowBottom = restGlow:CreateTexture(nil, "BACKGROUND")
     glowBottom:SetTexture(WHITE)
-    glowBottom:SetPoint("TOPLEFT", f, "BOTTOMLEFT")
-    glowBottom:SetPoint("TOPRIGHT", f, "BOTTOMRIGHT")
+    glowBottom:SetPoint("TOPLEFT", restGlow, "BOTTOMLEFT")
+    glowBottom:SetPoint("TOPRIGHT", restGlow, "BOTTOMRIGHT")
     glowBottom:SetHeight(GLOW_SIZE)
     glowBottom:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.35))
 
@@ -379,8 +384,9 @@ function Bar:UpdateFills()
     if self.fillStyle == style then return end
     self.fillStyle = style
     UseAtlasFill(self.xpFill, CLASSIC_ATLAS.fillXP, WHITE_COLOR, 1)
-    -- Quest-XP gibt es im Original nicht: entsättigte XP-Textur, in der Quest-Farbe eingefärbt.
-    UseAtlasFill(self.questFill, CLASSIC_ATLAS.fillXP, questColor, questAlpha, true)
+    -- Quest-XP gibt es im Original nicht: Blizzards helle Vorschau-Textur entsättigt und in der
+    -- Quest-Farbe eingefärbt (die dunkle XP-Textur wäre eingefärbt kaum sichtbar).
+    UseAtlasFill(self.questFill, CLASSIC_ATLAS.prediction, questColor, questAlpha, true)
     UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
 end
 
@@ -468,6 +474,18 @@ function Bar:Anchor()
     self.overlay:SetFrameStrata("MEDIUM")
     self.overlay:SetFrameLevel((container and container:GetFrameLevel() or f:GetFrameLevel()) + 25)
 
+    -- Erholungs-Leuchten: modern um unsere Leiste, classic um Blizzards Rahmen (über dessen Grafik).
+    local glow = self.restGlow
+    glow:ClearAllPoints()
+    glow:SetFrameStrata("MEDIUM")
+    if IsClassic() and container then
+        glow:SetAllPoints(container)
+        glow:SetFrameLevel(container:GetFrameLevel() + 15)
+    else
+        glow:SetAllPoints(f)
+        glow:SetFrameLevel(f:GetFrameLevel() + 1)
+    end
+
     -- Der Info-Text richtet sich nach der obersten Leiste und muss mitwandern.
     if ns.InfoText.frame then ns.InfoText:Anchor() end
 end
@@ -502,13 +520,11 @@ end
 function Bar:UpdateResting()
     if not self.frame then return end
     local show = IsResting() and XPForeverDB.showRestIndicator
-    -- Das goldene Leuchten gehört zum modernen Rahmen; im Classic-Stil bleibt nur das Zzz.
-    local glow = show and not IsClassic()
     self.restIcon:SetShown(show)
-    self.restGlow:SetShown(glow)
+    self.restGlow:SetShown(show)
     if show then
         self.restIconAnim:Play()
-        if glow then self.restGlowAnim:Play() else self.restGlowAnim:Stop() end
+        self.restGlowAnim:Play()
     else
         self.restIconAnim:Stop()
         self.restGlowAnim:Stop()
