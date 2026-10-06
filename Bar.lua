@@ -12,6 +12,10 @@ local GRADIENT_SHADE = 0.55 -- brightness of the bottom edge when shading is on
 local ANIM_DURATION = 0.4
 local FLASH_DURATION = 0.8
 
+-- Classic style: Blizzard's frame has pointed ends that are transparent outside the outline, so a
+-- full-width rectangle peeks out at the corners. Pull the fill in a little at both ends.
+local CLASSIC_END_INSET = 3
+
 -- Blizzard's original experience bar textures, used by the Classic style.
 local CLASSIC_ATLAS = {
     background = "UI-HUD-ExperienceBar-Background",
@@ -385,7 +389,27 @@ local function IsClassic()
     return XPForeverDB.barStyle == "classic"
 end
 
--- Fills per style: solid in Modern, Blizzard's textures in Classic.
+-- True while a fill still has its default color (and opacity).
+local function IsDefaultLook(colorKey, opacityKey)
+    local db = XPForeverDB
+    return db[colorKey]:lower() == ns.GetDefault(colorKey):lower()
+        and (not opacityKey or db[opacityKey] == ns.GetDefault(opacityKey))
+end
+
+-- Classic: Blizzard's texture while a fill keeps its default look, otherwise the color from the settings.
+-- Tinted Blizzard textures were invisible in Forever, so a chosen color is a solid fill like in Modern.
+-- Blizzard colors XP blue while you are rested; next to the blue rested preview that would be hard to
+-- tell apart, so the default XP texture is always the purple one.
+local function UseClassicFill(tex, atlas, colorKey, opacityKey)
+    local alpha = opacityKey and XPForeverDB[opacityKey] / 100 or 1
+    if IsDefaultLook(colorKey, opacityKey) then
+        UseAtlasFill(tex, atlas, WHITE_COLOR, 1)
+    else
+        UseColorFill(tex, ns.GetColor(colorKey), alpha)
+    end
+end
+
+-- Fills per style: solid in Modern; Blizzard's textures or the chosen colors in Classic.
 function Bar:UpdateFills()
     local db = XPForeverDB
     local questColor, questAlpha = ns.GetColor("colorQuest"), db.questOpacity / 100
@@ -396,16 +420,14 @@ function Bar:UpdateFills()
         UseColorFill(self.restedFill, ns.GetColor("colorRested"), db.restedOpacity / 100)
         return
     end
-    -- Blizzard colors XP blue while you are rested; next to the blue rested preview, XP and rested XP
-    -- would be hard to tell apart. So XP always stays purple here.
-    local style = questColor:GenerateHexColor() .. questAlpha
+    local style = table.concat({ db.colorXP, db.colorQuest, db.questOpacity, db.colorRested,
+        db.restedOpacity, tostring(db.fillGradient) }, ":")
     if self.fillStyle == style then return end
     self.fillStyle = style
-    UseAtlasFill(self.xpFill, CLASSIC_ATLAS.fillXP, WHITE_COLOR, 1)
-    -- Quest XP doesn't exist in the original. Tinted Blizzard textures were invisible in Forever,
-    -- so it is a solid fill like in the Modern style.
+    UseClassicFill(self.xpFill, CLASSIC_ATLAS.fillXP, "colorXP")
+    -- Quest XP doesn't exist in the original, so it is always a solid fill.
     UseColorFill(self.questFill, questColor, questAlpha)
-    UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
+    UseClassicFill(self.restedFill, CLASSIC_ATLAS.prediction, "colorRested", "restedOpacity")
 end
 
 function Bar:ApplySettings()
@@ -415,10 +437,11 @@ function Bar:ApplySettings()
 
     -- Border: our own bronze border in Modern, Blizzard's frame and dividers in Classic (the container stays visible).
     for _, part in ipairs(self.modernParts) do part:SetShown(not classic) end
-    local inset = classic and 0 or BORDER
+    local insetX = classic and CLASSIC_END_INSET or BORDER
+    local insetY = classic and 0 or BORDER
     self.inner:ClearAllPoints()
-    self.inner:SetPoint("TOPLEFT", inset, -inset)
-    self.inner:SetPoint("BOTTOMRIGHT", -inset, inset)
+    self.inner:SetPoint("TOPLEFT", insetX, -insetY)
+    self.inner:SetPoint("BOTTOMRIGHT", -insetX, insetY)
     if classic and C_Texture.GetAtlasInfo(CLASSIC_ATLAS.background) then
         self.background:SetAtlas(CLASSIC_ATLAS.background)
     else
