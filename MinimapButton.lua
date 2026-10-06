@@ -7,6 +7,10 @@ local state = ns.state
 
 -- TGA (128x128, 32 Bit) lädt WoW sicher; Quelle: design/icons/XPForeverIcon.png im Workspace.
 local ICON = "Interface\\AddOns\\" .. addonName .. "\\Media\\icon"
+local ICON_SIZE = 28 -- füllt den 31-px-Button fast ganz aus
+-- LibDBIcon schneidet 5 % an jedem Rand ab (Zoom-Effekt). Mit diesen Koordinaten bleibt der
+-- Bronze-Ring des Icons vollständig sichtbar: -a + 0.05 * (1 + 2a) = 0  →  a = 0.05 / 0.9.
+local ICON_COORDS = { -0.0556, 1.0556, -0.0556, 1.0556 }
 
 local MinimapButton = {}
 ns.MinimapButton = MinimapButton
@@ -50,12 +54,20 @@ function MinimapButton:Init()
     local launcher = LDB:NewDataObject(addonName, {
         type = "launcher",
         icon = ICON,
+        iconCoords = ICON_COORDS,
         label = addonName,
         OnClick = OnClick,
         OnTooltipShow = ShowTooltip,
     })
     XPForeverDB.minimap.hide = not XPForeverDB.showMinimapButton
     DBIcon:Register(addonName, launcher, XPForeverDB.minimap)
+
+    -- Unser Icon bringt seinen eigenen Bronze-Ring mit. LibDBIcons goldener Ring säße doppelt darum
+    -- und ist in Forever (meldet sich als Mainline) zudem leicht versetzt, also weg damit.
+    DBIcon:RemoveButtonBorder(addonName)
+    DBIcon:RemoveButtonBackground(addonName)
+    DBIcon:SetButtonIcon(addonName, nil, ICON_SIZE, "CENTER", 0, 0)
+
     DBIcon:AddButtonToCompartment(addonName)
 end
 
