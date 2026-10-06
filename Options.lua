@@ -1,8 +1,8 @@
 local addonName, ns = ...
 local L = ns.L
 
--- Einstellungen unter Optionen → AddOns → XPForever, aufgebaut mit Blizzards Settings-API.
--- Hauptseite: Erfahrungsleiste. Unterseiten: Farben, Info-Text, Statistik & Zurücksetzen.
+-- Settings under Options → AddOns → XPForever, built with Blizzard's Settings API.
+-- Main page: experience bar. Sub pages: colors, info text, statistics & reset.
 local Options = { settings = {}, categories = {} }
 ns.Options = Options
 
@@ -50,7 +50,7 @@ local function Slider(category, key, name, tooltip, min, max, step, formatter)
     return Settings.CreateSlider(category, Register(category, key, name), options, tooltip)
 end
 
--- entries: Liste aus { value, label }
+-- entries: list of { value, label }
 local function Dropdown(category, key, name, tooltip, entries)
     local function GetOptions()
         local container = Settings.CreateControlTextContainer()
@@ -66,13 +66,13 @@ local function ColorSwatch(category, key, name)
     return Settings.CreateColorSwatch(category, Register(category, key, name))
 end
 
--- Ein Steuerelement nur bedienbar machen, wenn eine Bedingung erfüllt ist (sonst ausgegraut).
--- Blizzard wertet die Bedingung neu aus, sobald sich das Setting des Eltern-Initializers ändert.
+-- Only enable a control while a condition is met (grayed out otherwise).
+-- Blizzard re-evaluates the condition whenever the parent initializer's setting changes.
 local function DependsOn(initializer, parentInitializer, predicate)
     initializer:SetParentInitializer(parentInitializer, predicate)
 end
 
--- Checkboxen für alle Textbausteine (ns.TEXT_ITEMS); prefix ist "bar" oder "info".
+-- Checkboxes for all text items (ns.TEXT_ITEMS); prefix is "bar" or "info".
 local function ContentCheckboxes(category, prefix, parentInitializer, predicate)
     for _, item in ipairs(ns.TEXT_ITEMS) do
         local name, tooltip = L["optItem" .. item.id], L["optItem" .. item.id .. "Tip"]
@@ -87,7 +87,7 @@ local function RegisterBarPage(category)
         { "modern", L.optStyleModern },
         { "classic", L.optStyleClassic },
     })
-    -- Höhe und eigene Segmente gibt es nur im modernen Stil (Classic übernimmt Blizzards Maße).
+    -- Height and our own segments only exist in the Modern style (Classic uses Blizzard's size).
     local function IsModern() return XPForeverDB.barStyle ~= "classic" end
     DependsOn(Slider(category, "height", L.optHeight, L.optHeightTip, 12, 32, 1), style, IsModern)
     DependsOn(Checkbox(category, "showSegments", L.optSegments, L.optSegmentsTip), style, IsModern)
@@ -111,13 +111,13 @@ local function RegisterBarPage(category)
     })
     ContentCheckboxes(category, "bar", mode, function() return XPForeverDB.barTextMode ~= "never" end)
 
-    -- Abschluss der Hauptseite: Name, Autor und Version.
+    -- End of the main page: name, author and version.
     Header(category, L.aboutLine:format(ns.BrandLine(), ns.VERSION))
 end
 
 local function RegisterColorsPage(category)
     Header(category, L.optSectionColors)
-    -- Blizzards Farbwähler in den Settings bietet keine Deckkraft, deshalb je ein Regler darunter.
+    -- Blizzard's settings color picker has no opacity, so there is a slider below each color.
     ColorSwatch(category, "colorXP", L.optColorXP)
     ColorSwatch(category, "colorQuest", L.optColorQuest)
     Slider(category, "questOpacity", L.optQuestOpacity, L.optOpacityTip, 10, 100, 5, FormatPercentLabel)
@@ -154,8 +154,8 @@ local function RegisterStatsPage(category)
         { 0, L.optRateWindowSession },
     })
 
-    -- Eigener Button statt Blizzards "Standard": Der setzt wahlweise das ganze Spiel (inkl.
-    -- Tastenbelegung) oder nur die gerade offene Unterseite zurück.
+    -- Our own button instead of Blizzard's "Defaults", which resets either the whole game (including
+    -- key bindings) or only the page that is currently open.
     Header(category, L.optSectionReset)
     Button(category, L.optResetSession, L.optResetSessionButton, function() ns.ResetSession() end,
         L.optResetSessionTip)
@@ -163,8 +163,8 @@ local function RegisterStatsPage(category)
         function() StaticPopup_Show("XPFOREVER_RESET_SETTINGS") end, L.optResetSettingsTip)
 end
 
--- Blizzards "Standard"-Button oben rechts auf unseren Seiten ausblenden (siehe oben) und auf
--- fremden Seiten wieder einblenden. Wir fassen ihn nur an, wenn es nötig ist.
+-- Hide Blizzard's "Defaults" button (top right) on our pages (see above) and show it again on
+-- other pages. We only touch it when necessary.
 local function HideDefaultsButtonOnOurPages()
     local button = SettingsPanel:GetSettingsList().Header.DefaultsButton
     local hiddenByUs = false
@@ -182,7 +182,7 @@ local function HideDefaultsButtonOnOurPages()
             hiddenByUs = false
         end
     end)
-    -- Blizzard blendet ihn z. B. nach dem Leeren der Suche wieder ein.
+    -- Blizzard shows it again e.g. after the search box is cleared.
     button:HookScript("OnShow", function()
         if IsOurs(SettingsPanel:GetCurrentCategory()) then
             button:Hide()
@@ -220,7 +220,7 @@ function Options:Open()
     Settings.OpenToCategory(self.category:GetID())
 end
 
--- Stil-Auswahl nur ein einziges Mal anbieten. Im Kampf warten, bis er vorbei ist.
+-- Offer the style choice only once. In combat, wait until it is over.
 local STYLE_PROMPT_DELAY = 3
 local STYLE_PROMPT_RETRY = 5
 
@@ -237,9 +237,9 @@ function Options:ShowStylePromptOnce()
     end)
 end
 
--- Kleines Auswahlfenster oben in der Mitte: Modern / Klassisch nebeneinander. Ein Klick schaltet die
--- Leiste sofort live um, man sieht die Wirkung direkt. Bewusst nicht in UISpecialFrames (ESC), weil das
--- Eintragen dort Blizzards Fenster-Code verunreinigen kann (siehe Taint-Log zu AtlasLoot).
+-- Small chooser at the top center: Modern / Classic side by side. A click switches the bar live, so the
+-- result is visible right away. Deliberately not added to UISpecialFrames (Escape): adding frames there
+-- can taint Blizzard's window handling.
 local PROMPT_WIDTH, PROMPT_HEIGHT = 300, 150
 local PROMPT_BUTTON_WIDTH, PROMPT_BUTTON_HEIGHT = 120, 30
 
@@ -261,12 +261,12 @@ function Options:ShowStylePrompt()
         prompt:SetToplevel(true)
         prompt:EnableMouse(true)
 
-        -- Blizzards Dialograhmen als Kind-Element: Die Vorlage nutzt setAllPoints und würde ein Fenster,
-        -- das sie direkt erbt, auf Bildschirmgröße ziehen.
+        -- Blizzard's dialog border as a child frame: the template uses setAllPoints and would stretch a
+        -- window that inherits it directly to the size of the screen.
         local border = CreateFrame("Frame", nil, prompt, "DialogBorderTemplate")
         border:SetAllPoints()
         border:SetFrameLevel(prompt:GetFrameLevel())
-        -- Texte auf eigener Ebene über dem Rahmenhintergrund.
+        -- Texts on their own level above the border background.
         local content = CreateFrame("Frame", nil, prompt)
         content:SetAllPoints()
         content:SetFrameLevel(border:GetFrameLevel() + 5)
@@ -307,7 +307,7 @@ function Options:ShowStylePrompt()
     prompt:Show()
 end
 
--- Einstellung von außen ändern (z. B. per Minimap-Klick), damit das Optionsfenster mitzieht.
+-- Change a setting from outside (e.g. a minimap click) so the settings panel stays in sync.
 function Options:SetValue(key, value)
     local setting = self.settings[key]
     if setting then
@@ -318,7 +318,7 @@ function Options:SetValue(key, value)
     end
 end
 
--- Über die registrierten Settings zurücksetzen, damit das offene Optionsfenster mitzieht.
+-- Reset through the registered settings so an open settings panel stays in sync.
 function Options:ResetToDefaults()
     for key in pairs(ns.defaults) do
         local setting = self.settings[key]

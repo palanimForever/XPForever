@@ -2,14 +2,14 @@ local addonName, ns = ...
 local L = ns.L
 local state = ns.state
 
--- Minimap-Button über LibDBIcon: rund, mit gedrückter Maustaste um die Minimap ziehbar, Position in
--- XPForeverDB.minimap. Zusätzlich ein Eintrag in Blizzards Addon-Menü an der Minimap (Addon Compartment).
+-- Minimap button via LibDBIcon: round, can be dragged around the minimap, position stored in
+-- XPForeverDB.minimap. Also adds an entry to Blizzard's addon menu at the minimap (addon compartment).
 
--- TGA (128x128, 32 Bit) lädt WoW sicher; Quelle: design/icons/XPForeverIcon.png im Workspace.
+-- TGA (128x128, 32 bit) loads reliably in WoW.
 local ICON = "Interface\\AddOns\\" .. addonName .. "\\Media\\icon"
-local ICON_SIZE = 28 -- füllt den 31-px-Button fast ganz aus
--- LibDBIcon schneidet 5 % an jedem Rand ab (Zoom-Effekt). Mit diesen Koordinaten bleibt der
--- Bronze-Ring des Icons vollständig sichtbar: -a + 0.05 * (1 + 2a) = 0  →  a = 0.05 / 0.9.
+local ICON_SIZE = 28 -- almost fills the 31 px button
+-- LibDBIcon crops 5% from every edge (zoom effect). With these coordinates the icon's bronze ring
+-- stays fully visible: -a + 0.05 * (1 + 2a) = 0  →  a = 0.05 / 0.9.
 local ICON_COORDS = { -0.0556, 1.0556, -0.0556, 1.0556 }
 
 local MinimapButton = {}
@@ -44,7 +44,7 @@ local function OnClick(_, button)
     end
 end
 
--- Muss vor PLAYER_LOGIN laufen (LibDBIcon positioniert die Buttons beim Login), also in ADDON_LOADED.
+-- Must run before PLAYER_LOGIN (LibDBIcon positions its buttons on login), so in ADDON_LOADED.
 function MinimapButton:Init()
     local LDB = LibStub("LibDataBroker-1.1", true)
     local DBIcon = LibStub("LibDBIcon-1.0", true)
@@ -62,8 +62,8 @@ function MinimapButton:Init()
     XPForeverDB.minimap.hide = not XPForeverDB.showMinimapButton
     DBIcon:Register(addonName, launcher, XPForeverDB.minimap)
 
-    -- Unser Icon bringt seinen eigenen Bronze-Ring mit. LibDBIcons goldener Ring säße doppelt darum
-    -- und ist in Forever (meldet sich als Mainline) zudem leicht versetzt, also weg damit.
+    -- Our icon has its own bronze ring. LibDBIcon's golden ring would sit around it twice and is
+    -- slightly offset in Forever (which reports itself as Mainline), so remove it.
     DBIcon:RemoveButtonBorder(addonName)
     DBIcon:RemoveButtonBackground(addonName)
     DBIcon:SetButtonIcon(addonName, nil, ICON_SIZE, "CENTER", 0, 0)
@@ -74,6 +74,6 @@ end
 function MinimapButton:ApplySettings()
     if not self.DBIcon then return end
     XPForeverDB.minimap.hide = not XPForeverDB.showMinimapButton
-    -- Refresh übernimmt auch eine neue db-Tabelle (z. B. nach "Standardeinstellungen").
+    -- Refresh also picks up a new db table (e.g. after "Restore defaults").
     self.DBIcon:Refresh(addonName, XPForeverDB.minimap)
 end

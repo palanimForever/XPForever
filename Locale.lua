@@ -1,7 +1,7 @@
 local addonName, ns = ...
 
--- Englisch ist die Basis. Für andere Client-Sprachen werden nur abweichende Texte überschrieben;
--- fehlt eine Übersetzung, bleibt der englische Text stehen.
+-- English is the base. Other client languages only override the texts that differ;
+-- if a translation is missing, the English text is used.
 local L = {
     -- Tooltip
     rested = "Rested",
@@ -17,7 +17,7 @@ local L = {
     hintResetSession = "Ctrl-click: reset session",
     hintOptions = "Right-click: settings",
     hintToggleInfo = "Click: show/hide info text",
-    -- Kurze Aktionstexte neben den Maus-Symbolen (ns.ClickHint)
+    -- Short action texts next to the mouse icons (ns.ClickHint)
     actionToggleInfo = "Show/hide info text",
     actionResetSession = "Reset session",
     actionOptions = "Settings",
@@ -27,7 +27,7 @@ local L = {
     hintMinimapLeft = "Left-click: settings",
     hintMinimapRight = "Right-click: show/hide info text",
     hintMinimapDrag = "Drag: move around the minimap",
-    byAuthor = "by %s", -- Branding: bewusst in allen Sprachen englisch
+    byAuthor = "by %s", -- branding: deliberately English in every language
     aboutLine = "%s · version %s",
 
     -- Text building blocks (bar text and info text)
@@ -288,7 +288,7 @@ translations.deDE = {
     optResetSettingsConfirm = "Alle Einstellungen von XPForever auf Standard zurücksetzen?\n\nDas lässt sich nicht rückgängig machen.",
 }
 
--- Entwicklung: Addon-Sprache erzwingen (z. B. "enUS" für Screenshots auf einem deutschen Client), sonst nil.
+-- Development: force the addon language (e.g. "enUS" for screenshots on a German client), otherwise nil.
 local FORCE_LOCALE = nil
 
 for key, text in pairs(translations[FORCE_LOCALE or GetLocale()] or {}) do

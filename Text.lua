@@ -2,12 +2,12 @@ local addonName, ns = ...
 local L = ns.L
 local state = ns.state
 
--- Zahlen- und Farbformatierung sowie die Textbausteine für Leisten-Text und Info-Text.
+-- Number and color formatting plus the text items for the bar text and the info text.
 
 local TEXT_SEPARATOR = "  |cff808080·|r  "
 
--- Normalerweise formatiert WoW Zahlen nach der Client-Sprache. Ist zum Testen eine Sprache erzwungen
--- (ns.FORCE_LOCALE), werden auch die Zahlen in deren Format geschrieben.
+-- WoW normally formats numbers in the client language. If a language is forced for testing
+-- (ns.FORCE_LOCALE), numbers are written in that language's format, too.
 local NUMBER_FORMATS = {
     enUS = { thousands = ",", decimal = "." },
     deDE = { thousands = ".", decimal = "," },
@@ -26,7 +26,7 @@ function ns.FormatNumber(value)
     return text
 end
 
--- DECIMAL_SEPERATOR (sic) ist Blizzards lokalisiertes Dezimaltrennzeichen, z. B. "," auf deDE.
+-- DECIMAL_SEPERATOR (sic) is Blizzard's localized decimal separator, e.g. "," on deDE.
 function ns.FormatPercent(value)
     local decimal = forcedFormat and forcedFormat.decimal or DECIMAL_SEPERATOR or "."
     return (string.format("%.1f", value):gsub("%.", decimal))
@@ -40,7 +40,7 @@ function ns.FormatDuration(seconds)
     return string.format("%dm", minutes)
 end
 
--- Maus-Symbole aus Blizzards Einsteiger-Tutorial für Bedienhinweise in Tooltips.
+-- Mouse icons from Blizzard's new player tutorial for usage hints in tooltips.
 local MOUSE_ATLAS = {
     LeftButton = "newplayertutorial-icon-mouse-leftbutton",
     RightButton = "newplayertutorial-icon-mouse-rightbutton",
@@ -52,8 +52,8 @@ local function ModifierName(modifier)
     if modifier == "SHIFT" then return SHIFT_KEY_TEXT or "Shift" end
 end
 
--- Bedienhinweis wie "Strg + [Maus]  Sitzung zurücksetzen". Fehlt das Maus-Symbol im Client,
--- wird der reine Text (fallback) zurückgegeben.
+-- Usage hint like "Ctrl + [mouse]  Reset session". If the mouse icon is missing in the client,
+-- the plain text (fallback) is returned.
 function ns.ClickHint(button, modifier, action, fallback)
     local atlas = MOUSE_ATLAS[button]
     local info = atlas and C_Texture.GetAtlasInfo(atlas)
@@ -63,13 +63,13 @@ function ns.ClickHint(button, modifier, action, fallback)
     return prefix .. CreateAtlasMarkup(atlas, width, HINT_ICON_HEIGHT) .. "  " .. action
 end
 
--- Farben stehen als Hex-String ("ffRRGGBB") in den Einstellungen.
+-- Colors are stored as hex strings ("ffRRGGBB") in the settings.
 function ns.GetColor(key)
     return CreateColorFromHexString(XPForeverDB[key])
 end
 
--- Textbausteine. Die Einstellung heißt jeweils Präfix + id, z. B. "barRate" oder "infoRate".
--- value() liefert den Wert oder nil (Baustein ausblenden).
+-- Text items. Each setting is named prefix + id, e.g. "barRate" or "infoRate".
+-- value() returns the value or nil (hide the item).
 ns.TEXT_ITEMS = {
     { id = "Level", label = L.itemLabelLevel, value = function()
         return tostring(state.level)
@@ -113,8 +113,8 @@ function ns.HasTextItems(prefix)
     return false
 end
 
--- Baut eine Textzeile aus allen Bausteinen, die unter dem Präfix ("bar"/"info") aktiviert sind.
--- Bezeichnungen in Gold, Werte in Weiß bzw. in ihrer Leistenfarbe.
+-- Builds one line of text from all items enabled under the prefix ("bar"/"info").
+-- Labels in gold, values in white or in their bar color.
 function ns.BuildText(prefix)
     local db = XPForeverDB
     local parts = {}

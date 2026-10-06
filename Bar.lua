@@ -4,15 +4,15 @@ local state = ns.state
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
 local NUM_SEGMENTS = 20
-local BORDER = 2 -- Bronze-Rand in Pixeln
-local INNER_SHADOW = 1 -- dunkle Linie zwischen Rand und Füllung
+local BORDER = 2 -- bronze border in pixels
+local INNER_SHADOW = 1 -- dark line between border and fill
 local TEXT_FADE_DURATION = 0.15
 local GLOW_SIZE = 6
-local GRADIENT_SHADE = 0.55 -- Helligkeit der Unterkante beim Farbverlauf
+local GRADIENT_SHADE = 0.55 -- brightness of the bottom edge when shading is on
 local ANIM_DURATION = 0.4
 local FLASH_DURATION = 0.8
 
--- Blizzards Original-Texturen der XP-Leiste (siehe wiki/ui-style.md), für den Classic-Stil.
+-- Blizzard's original experience bar textures, used by the Classic style.
 local CLASSIC_ATLAS = {
     background = "UI-HUD-ExperienceBar-Background",
     fillXP = "UI-HUD-ExperienceBar-Fill-Experience",
@@ -20,13 +20,13 @@ local CLASSIC_ATLAS = {
 }
 local WHITE_COLOR = CreateColor(1, 1, 1)
 
--- Dunkler Hintergrund und Bronze-Rand wie die Forever-Aktionsleisten.
--- Die Füllfarben kommen aus den Einstellungen (ns.GetColor).
+-- Dark background and bronze border like the Forever action bars.
+-- The fill colors come from the settings (ns.GetColor).
 local COLORS = {
     border = CreateColor(0.62, 0.48, 0.27, 1),
-    borderLight = CreateColor(0.86, 0.70, 0.44, 1), -- Oberkante: wie geprägtes Metall
-    borderDark = CreateColor(0.36, 0.26, 0.14, 1), -- Unterkante
-    innerShadow = CreateColor(0, 0, 0, 0.8), -- trennt den Rand von jeder Füllfarbe
+    borderLight = CreateColor(0.86, 0.70, 0.44, 1), -- top edge: like embossed metal
+    borderDark = CreateColor(0.36, 0.26, 0.14, 1), -- bottom edge
+    innerShadow = CreateColor(0, 0, 0, 0.8), -- separates the border from any fill color
     background = CreateColor(0.04, 0.05, 0.09, 1),
     divider = CreateColor(0, 0, 0, 0.55),
     dividerHighlight = CreateColor(1, 1, 1, 0.12),
@@ -40,7 +40,7 @@ local function Colorize(text, color)
     return WrapTextInColorCode(text, color:GenerateHexColor())
 end
 
--- Ohne Farbverlauf entspricht die Füllung exakt der gewählten Farbe.
+-- Without shading, the fill matches the chosen color exactly.
 local function SetFillColor(tex, color, alpha)
     local r, g, b = color:GetRGB()
     local shade = XPForeverDB.fillGradient and GRADIENT_SHADE or 1
@@ -54,7 +54,7 @@ local function CreateFill(parent, subLevel)
     return tex
 end
 
--- Moderner Stil: einfarbige Füllung (mit optionalem Farbverlauf).
+-- Modern style: solid fill (with optional shading).
 local function UseColorFill(tex, color, alpha)
     tex.atlas = nil
     tex:SetTexture(WHITE)
@@ -63,8 +63,8 @@ local function UseColorFill(tex, color, alpha)
     SetFillColor(tex, color, alpha)
 end
 
--- Classic-Stil: Blizzards Original-Textur. SetSpan schneidet sie später zu, statt sie zu stauchen.
--- Fehlt der Atlas im Client, bleibt es bei der einfarbigen Füllung.
+-- Classic style: Blizzard's original texture. SetSpan crops it later instead of squashing it.
+-- If the atlas is missing in the client, the solid fill is used.
 local function UseAtlasFill(tex, atlas, color, alpha, desaturate)
     local info = C_Texture.GetAtlasInfo(atlas)
     if not info then
@@ -74,16 +74,16 @@ local function UseAtlasFill(tex, atlas, color, alpha, desaturate)
     tex:SetAtlas(atlas)
     tex.atlas = info
     tex:SetDesaturated(desaturate or false)
-    -- Den Farbverlauf des modernen Stils ausdrücklich durch eine einheitliche Farbe ersetzen,
-    -- sonst bleibt seine Abdunkelung auf Blizzards Textur liegen.
+    -- Explicitly replace the Modern style's shading with a flat color,
+    -- otherwise its darkening stays on Blizzard's texture.
     local r, g, b = color:GetRGB()
     local flat = CreateColor(r, g, b, alpha)
     tex:SetGradient("VERTICAL", flat, flat)
     tex:SetVertexColor(r, g, b, alpha)
 end
 
--- Spannt eine Textur über den Bereich [from, to] (Anteile 0..1) der Leiste. Atlas-Texturen werden
--- wie bei Blizzards StatusBar passend beschnitten, damit sie bei jedem Füllstand unverzerrt bleiben.
+-- Stretches a texture over the range [from, to] (fractions 0..1) of the bar. Atlas textures are cropped
+-- like in Blizzard's StatusBar so they stay undistorted at any fill level.
 local function SetSpan(tex, from, to)
     local width = Bar.inner:GetWidth()
     from = math.max(0, math.min(from, 1))
@@ -112,11 +112,9 @@ local function CreateText(parent, justify, fontObject)
     return text
 end
 
--- Die Blizzard-XP-Leiste unsichtbar machen. Ihr Container bleibt bestehen, damit die
--- Aktionsleisten-Anordnung im Edit Mode nicht verrutscht und die Leiste dort verschiebbar bleibt.
--- Blizzard-Frames dauerhaft unsichtbar halten: Das Spiel setzt ihre Transparenz zur Laufzeit wieder auf 1
--- (per /xpf debug beobachtet, 2026-10-06; im Lua-Code nicht auffindbar). Deshalb jedes erneute Sichtbarmachen
--- sofort zurücknehmen und es zusätzlich bei jedem Neuzeichnen sicherstellen.
+-- Keep Blizzard frames hidden: the game sets their alpha back to 1 at runtime (measured with /xpf debug;
+-- not found in the Lua code). So undo every attempt to show them right away and also enforce it on
+-- every redraw.
 local silenced = setmetatable({}, { __mode = "k" })
 
 local function Silence(frame)
@@ -131,8 +129,8 @@ local function Silence(frame)
     end
 end
 
--- Die Blizzard-XP-Leiste samt Erholungs-Marker unsichtbar machen. Ihr Container bleibt bestehen, damit die
--- Aktionsleisten-Anordnung im Edit Mode nicht verrutscht und die Leiste dort verschiebbar bleibt.
+-- Hide Blizzard's experience bar including its rested marker. Its container stays, so the action bar
+-- layout in Edit Mode doesn't shift and the bar can still be moved there.
 local function HideBlizzardBar()
     if not (StatusTrackingBarManager and StatusTrackingBarInfo) then return end
     local index = StatusTrackingBarInfo.BarsEnum.Experience
@@ -140,14 +138,14 @@ local function HideBlizzardBar()
         local bar = container.bars and container.bars[index]
         if bar then
             Silence(bar)
-            -- Der Marker kennt keine Quest-XP und stünde an der falschen Stelle.
+            -- The marker doesn't know about quest XP and would sit in the wrong place.
             if bar.ExhaustionTick then Silence(bar.ExhaustionTick) end
         end
     end
 end
 
--- Vier Linien entlang der Innenseite von `frame` (thickness Pixel breit). Für Rahmen, die eine
--- Füllung nicht verdecken dürfen.
+-- Four lines along the inside of `frame` (thickness pixels wide). For borders that must not cover
+-- a fill.
 local function CreateEdges(parent, frame, thickness, color, layer, subLevel)
     local edges = {
         { "TOPLEFT", "TOPRIGHT", nil, thickness },
@@ -168,18 +166,18 @@ local function CreateEdges(parent, frame, thickness, color, layer, subLevel)
     return lines
 end
 
--- Goldenes Leuchten im Erholungsgebiet, angelehnt an das Leuchten des Spielerrahmens.
--- Animiert wird nur das Alpha des Frames: Alpha-Animationen direkt auf Texturen mit
--- SetGradient färbten diese weiß (siehe Wiki).
+-- Golden glow while resting, inspired by the player frame's glow.
+-- Only the frame's alpha is animated: alpha animations directly on textures with
+-- SetGradient turned them white.
 local function CreateRestGlow(f)
-    -- Position setzt Bar:Anchor: modern um unsere Leiste, classic um Blizzards Rahmen.
+    -- Bar:Anchor sets the position: Modern around our bar, Classic around Blizzard's frame.
     local restGlow = CreateFrame("Frame", nil, f)
     restGlow:SetAllPoints()
     restGlow:Hide()
 
-    -- Modern: goldene Rahmenkanten über dem Bronze-Rand plus weicher Schein oben und unten.
+    -- Modern: golden border edges over the bronze border plus a soft glow above and below.
     restGlow.modernPieces = CreateEdges(restGlow, restGlow, BORDER, COLORS.restGlow, "OVERLAY")
-    -- Classic: Blizzards Rahmengrafik golden und additiv darübergelegt (exakt dieselbe Form).
+    -- Classic: Blizzard's frame art laid over it in gold with additive blending (exactly the same shape).
     restGlow.classicFrame = restGlow:CreateTexture(nil, "OVERLAY")
     restGlow.classicFrame:SetBlendMode("ADD")
 
@@ -211,7 +209,7 @@ local function CreateRestGlow(f)
     return restGlow, breathe
 end
 
--- Dieselbe animierte "Zzz"-Grafik wie am Spielerporträt.
+-- The same animated "Zzz" art as on the player portrait.
 local function CreateRestIcon(parent)
     local restIcon = CreateFrame("Frame", nil, parent)
     restIcon:SetSize(20, 20)
@@ -246,7 +244,7 @@ function Bar:Init()
     border:SetAllPoints()
     border:SetColorTexture(COLORS.border:GetRGBA())
 
-    -- Metall-Effekt: hellere Oberkante, dunklere Unterkante des Bronze-Rands.
+    -- Metal effect: lighter top edge, darker bottom edge of the bronze border.
     local borderTop = f:CreateTexture(nil, "BACKGROUND")
     borderTop:SetColorTexture(COLORS.borderLight:GetRGBA())
     borderTop:SetPoint("TOPLEFT")
@@ -257,7 +255,7 @@ function Bar:Init()
     borderBottom:SetPoint("BOTTOMLEFT")
     borderBottom:SetPoint("BOTTOMRIGHT")
     borderBottom:SetHeight(1)
-    -- Teile, die nur der moderne Stil zeigt (im Classic-Stil übernimmt Blizzards Rahmen).
+    -- Parts only the Modern style shows (in Classic, Blizzard's frame takes over).
     self.modernParts = { border, borderTop, borderBottom }
 
     local inner = CreateFrame("Frame", nil, f)
@@ -278,8 +276,8 @@ function Bar:Init()
 
     self.restGlow, self.restGlowAnim = CreateRestGlow(f)
 
-    -- Aufleuchten bei XP-Gewinn: eigener Frame zwischen Füllungen und Trennern. Animiert wird
-    -- das Frame-Alpha, nicht die Textur (siehe Wiki: Alpha-Animation auf Texturen).
+    -- Flash on XP gain: its own frame between fills and dividers. The frame's alpha is animated,
+    -- not the texture (alpha animations on textures turned them white).
     local flashFrame = CreateFrame("Frame", nil, inner)
     flashFrame:SetAllPoints()
     flashFrame:SetFrameLevel(inner:GetFrameLevel() + 1)
@@ -296,15 +294,15 @@ function Bar:Init()
     flashAnim:SetScript("OnFinished", function() flashFrame:Hide() end)
     self.flashAnim = flashAnim
 
-    -- Treibt die Gleit-Animation; OnUpdate ist nur gesetzt, solange sie läuft.
+    -- Drives the glide animation; OnUpdate is only set while it runs.
     self.animator = CreateFrame("Frame", nil, f)
 
     local overlay = CreateFrame("Frame", nil, inner)
     overlay:SetAllPoints()
     overlay:SetFrameLevel(inner:GetFrameLevel() + 5)
 
-    -- Trenner als "Gravur": dunkle Linie plus helle Kante rechts daneben, damit sie
-    -- auf dem leeren Hintergrund dezent bleiben und auf farbigen Füllungen sichtbar sind.
+    -- Dividers as an "engraving": a dark line plus a light edge to its right, so they stay
+    -- subtle on the empty background and visible on colored fills.
     self.dividers = {}
     for i = 1, NUM_SEGMENTS - 1 do
         local divider = overlay:CreateTexture(nil, "BACKGROUND")
@@ -318,25 +316,25 @@ function Bar:Init()
         self.dividers[i] = divider
     end
 
-    -- Dunkle Innenlinie über den Füllungen: Rand und Füllung bleiben bei jeder Farbe unterscheidbar.
+    -- Dark inner line over the fills: border and fill stay distinguishable with any color.
     for _, line in ipairs(CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")) do
         table.insert(self.modernParts, line)
     end
     self.overlay = overlay
 
-    -- Eigener Frame für die Hover-Texte, damit sie gemeinsam ein- und ausgeblendet werden können.
+    -- Separate frame for the hover texts so they can fade in and out together.
     local texts = CreateFrame("Frame", nil, overlay)
     texts:SetAllPoints()
     texts:SetAlpha(0)
     self.texts = texts
 
-    -- Eine Zeile aus den gewählten Textbausteinen; zu lange Zeilen werden mit "…" gekürzt.
+    -- One line of the chosen text items; lines that are too long are cut with "…".
     self.hoverText = CreateText(texts, "CENTER")
     self.hoverText:SetPoint("LEFT", 6, 0)
     self.hoverText:SetPoint("RIGHT", -6, 0)
     self.hoverText:SetWordWrap(false)
 
-    -- Prozentzahl: Gold mit feiner Kontur, ohne zusätzlichen Schatten.
+    -- Percentage: gold with a thin outline, no extra shadow.
     self.percentText = CreateText(overlay, "CENTER", "GameFontNormal")
     self.percentText:SetPoint("CENTER", 0, 0)
     self.percentText:SetShadowOffset(0, 0)
@@ -344,10 +342,10 @@ function Bar:Init()
     self.percentText:SetFont(font, size, "OUTLINE")
     self.percentFont = { font, size }
 
-    -- Das Zzz teilt sich den Platz mit dem rechten Text und blendet gegenläufig.
+    -- The Zzz shares its spot with the bar text and fades the opposite way.
     self.restIcon, self.restIconAnim = CreateRestIcon(overlay)
 
-    -- Auf die Größe von inner reagieren: Nur dann ist dessen Breite garantiert schon berechnet.
+    -- React to the size of inner: only then is its width guaranteed to be computed.
     inner:SetScript("OnSizeChanged", function(_, width) self:Layout(width) end)
     f:SetScript("OnEnter", function()
         self.hovered = true
@@ -370,8 +368,8 @@ function Bar:Init()
         end
     end)
 
-    -- Blizzard verteilt XP-, Ruf- und andere Leisten auf zwei Container und sortiert bei Änderungen
-    -- (z. B. "Ruf beobachten") um. Danach jeweils neu verankern.
+    -- Blizzard spreads experience, reputation and other bars over two containers and reshuffles them
+    -- on changes (e.g. tracking a reputation). Re-anchor afterwards.
     if StatusTrackingBarManager then
         for _, container in ipairs(StatusTrackingBarManager.barContainers or {}) do
             container:HookScript("OnSizeChanged", function() self:Anchor() end)
@@ -382,12 +380,12 @@ function Bar:Init()
     HideBlizzardBar()
 end
 
--- Einstellungen anwenden, die nicht bei jedem XP-Update neu gesetzt werden müssen.
+-- Apply settings that don't need to be set again on every XP update.
 local function IsClassic()
     return XPForeverDB.barStyle == "classic"
 end
 
--- Füllungen je nach Stil: modern einfarbig, classic mit Blizzards Texturen.
+-- Fills per style: solid in Modern, Blizzard's textures in Classic.
 function Bar:UpdateFills()
     local db = XPForeverDB
     local questColor, questAlpha = ns.GetColor("colorQuest"), db.questOpacity / 100
@@ -398,14 +396,14 @@ function Bar:UpdateFills()
         UseColorFill(self.restedFill, ns.GetColor("colorRested"), db.restedOpacity / 100)
         return
     end
-    -- Blizzard färbt die XP blau, solange man erholt ist; neben der blauen Erholungs-Vorschau wären XP
-    -- und Erholung dann kaum zu unterscheiden. Deshalb bleibt die XP hier immer lila.
+    -- Blizzard colors XP blue while you are rested; next to the blue rested preview, XP and rested XP
+    -- would be hard to tell apart. So XP always stays purple here.
     local style = questColor:GenerateHexColor() .. questAlpha
     if self.fillStyle == style then return end
     self.fillStyle = style
     UseAtlasFill(self.xpFill, CLASSIC_ATLAS.fillXP, WHITE_COLOR, 1)
-    -- Quest-XP gibt es im Original nicht. Eingefärbte Blizzard-Texturen waren in Forever unsichtbar
-    -- (beobachtet 2026-10-06), deshalb wie im modernen Stil als einfarbige Fläche.
+    -- Quest XP doesn't exist in the original. Tinted Blizzard textures were invisible in Forever,
+    -- so it is a solid fill like in the Modern style.
     UseColorFill(self.questFill, questColor, questAlpha)
     UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
 end
@@ -415,7 +413,7 @@ function Bar:ApplySettings()
     local db = XPForeverDB
     local classic = IsClassic()
 
-    -- Rahmen: modern eigener Bronze-Rand, classic Blizzards Rahmen und Trenner (der Container bleibt sichtbar).
+    -- Border: our own bronze border in Modern, Blizzard's frame and dividers in Classic (the container stays visible).
     for _, part in ipairs(self.modernParts) do part:SetShown(not classic) end
     local inset = classic and 0 or BORDER
     self.inner:ClearAllPoints()
@@ -435,7 +433,7 @@ function Bar:ApplySettings()
         divider.highlight:SetShown(db.showSegments and not classic)
     end
 
-    -- Prozentzahl: modern Gold mit Kontur, classic wie Blizzards Leistentext.
+    -- Percentage: gold with outline in Modern, like Blizzard's bar text in Classic.
     if classic then
         self.percentText:SetFontObject("TextStatusBarText")
         self.percentText:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
@@ -453,8 +451,8 @@ function Bar:ApplySettings()
     self:UpdateResting()
 end
 
--- Der Container, in dem Blizzard gerade die XP-Leiste zeigt (bzw. gleich zeigen wird).
--- Beobachtet man einen Ruf, landet die XP-Leiste im zweiten Container.
+-- The container in which Blizzard currently shows (or is about to show) the experience bar.
+-- When tracking a reputation, the experience bar ends up in the second container.
 local function FindXPContainer()
     if StatusTrackingBarManager and StatusTrackingBarInfo then
         local xpIndex = StatusTrackingBarInfo.BarsEnum.Experience
@@ -467,9 +465,9 @@ local function FindXPContainer()
     return MainStatusTrackingBarContainer
 end
 
--- Modern: mittig auf den Blizzard-Container der XP-Leiste (eigene Höhe), über dessen Rahmen.
--- Classic: exakt auf Blizzards (unsichtbare) XP-Leiste, unter dessen Rahmen und Trennern.
--- In beiden Fällen verschiebt der Edit Mode unsere Leiste mit.
+-- Modern: centered on Blizzard's experience bar container (own height), above its frame.
+-- Classic: exactly on Blizzard's (hidden) experience bar, below its frame and dividers.
+-- In both cases Edit Mode moves our bar along.
 function Bar:Anchor()
     local f = self.frame
     local container = FindXPContainer()
@@ -490,11 +488,11 @@ function Bar:Anchor()
         f:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 90)
         f:SetSize(1192, XPForeverDB.height)
     end
-    -- Texte immer über allem, auch über Blizzards Rahmen im Classic-Stil.
+    -- Texts always on top, also above Blizzard's frame in the Classic style.
     self.overlay:SetFrameStrata("MEDIUM")
     self.overlay:SetFrameLevel((container and container:GetFrameLevel() or f:GetFrameLevel()) + 25)
 
-    -- Erholungs-Leuchten: modern um unsere Leiste, classic um Blizzards Rahmen (über dessen Grafik).
+    -- Rested glow: around our bar in Modern, around Blizzard's frame in Classic (above its art).
     local glow = self.restGlow
     glow:ClearAllPoints()
     glow:SetFrameStrata("MEDIUM")
@@ -514,12 +512,12 @@ function Bar:Anchor()
     glow.classicFrame:SetShown(classicGlow and true or false)
     for _, piece in ipairs(glow.modernPieces) do piece:SetShown(not classicGlow) end
 
-    -- Der Info-Text richtet sich nach der obersten Leiste und muss mitwandern.
+    -- The info text follows the topmost bar and has to move along.
     if ns.InfoText.frame then ns.InfoText:Anchor() end
 end
 
--- Hover-Texte je nach Einstellung: beim Darüberfahren, immer oder nie. Sanft überblenden.
--- Prozentzahl und Zzz machen der Textzeile Platz und blenden gegenläufig.
+-- Bar text depending on the setting: on mouseover, always or never. Fades smoothly.
+-- The percentage and the Zzz make room for the text and fade the opposite way.
 function Bar:UpdateTextVisibility(instant)
     local texts = self.texts
     local mode = XPForeverDB.barTextMode
@@ -544,7 +542,7 @@ function Bar:UpdateTextVisibility(instant)
     end)
 end
 
--- Im Erholungsgebiet (Gasthaus, Hauptstadt): Zzz-Icon zeigen und den Rahmen golden leuchten lassen.
+-- While resting (inn, capital city): show the Zzz icon and let the frame glow golden.
 function Bar:UpdateResting()
     if not self.frame then return end
     local show = IsResting() and XPForeverDB.showRestIndicator
@@ -569,7 +567,7 @@ function Bar:Layout(width)
     self:Refresh()
 end
 
--- Zielzustand der Leiste als Anteile (0..1): Ende der XP, der Quest-XP und der Erholung.
+-- Target state of the bar as fractions (0..1): end of XP, of quest XP and of rested XP.
 local function ComputeTarget()
     local db = XPForeverDB
     local max = state.max > 0 and state.max or 1
@@ -604,7 +602,7 @@ function Bar:Draw(display)
     self.spark:SetShown(display.xp > 0 and display.xp < 1)
 end
 
--- Neu gewonnener Abschnitt leuchtet kurz in einer aufgehellten XP-Farbe auf.
+-- The newly gained section flashes briefly in a lighter XP color.
 function Bar:Flash(from, to)
     if to <= from then return end
     local r, g, b = ns.GetColor("colorXP"):GetRGB()
@@ -614,7 +612,7 @@ function Bar:Flash(from, to)
     self.flashAnim:Restart()
 end
 
--- Spielt eine Folge von Zielzuständen nacheinander ab. RESET_STEP leert die Leiste (nach einem Level-up).
+-- Plays a sequence of target states one after another. RESET_STEP empties the bar (after a level-up).
 local RESET_STEP = {}
 
 function Bar:PlaySteps(steps)
@@ -673,14 +671,14 @@ function Bar:Refresh()
         self.display = target
         self:Draw(target)
     elseif target.level > display.level then
-        -- Level-up: erst bis zum Ende füllen, dann von vorn auf den neuen Stand.
+        -- Level-up: fill to the end first, then start over to the new value.
         self:Flash(display.xp, 1)
         self:PlaySteps({ { xp = 1, quest = 1, rested = 1, level = display.level }, RESET_STEP, target })
     elseif not SameTarget(target, self.goal or display) then
         if target.xp > display.xp then self:Flash(display.xp, target.xp) end
         self:PlaySteps({ target })
     elseif not self.goal then
-        -- Keine Änderung, aber z. B. neue Breite: aktuellen Stand neu zeichnen.
+        -- No change, but e.g. a new width: redraw the current state.
         self:Draw(display)
     end
 

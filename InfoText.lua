@@ -6,7 +6,7 @@ local PADDING = 6
 local InfoText = {}
 ns.InfoText = InfoText
 
--- Oberkante eines Frames in UIParent-Koordinaten (Aktionsleisten können eigene Skalierungen haben).
+-- Top edge of a frame in UIParent coordinates (action bars can have their own scale).
 local function TopInUIParent(frame)
     local top = frame:GetTop()
     return top and top * frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
@@ -27,7 +27,7 @@ function InfoText:Init()
     f:RegisterForDrag("LeftButton")
     self.frame = f
 
-    -- Rahmen, der nur bei gedrückter Shift-Taste erscheint und zeigt, dass der Text verschiebbar ist.
+    -- Highlight that only appears while Shift is held, showing that the text can be moved.
     local dragBackground = f:CreateTexture(nil, "BACKGROUND")
     dragBackground:SetAllPoints()
     dragBackground:SetColorTexture(0.3, 0.6, 1, 0.25)
@@ -38,7 +38,7 @@ function InfoText:Init()
     text:SetPoint("CENTER")
     self.text = text
 
-    -- Verschieben mit Shift + Ziehen; danach gilt die Position als "frei".
+    -- Move with Shift-drag; afterwards the position counts as "free".
     f:SetScript("OnDragStart", function()
         if not IsShiftKeyDown() then return end
         self.isMoving = true
@@ -47,7 +47,7 @@ function InfoText:Init()
     f:SetScript("OnDragStop", function()
         if not self.isMoving then return end
         f:StopMovingOrSizing()
-        -- Position speichern wir selbst, WoWs eigene Layout-Speicherung würde dazwischenfunken.
+        -- We store the position ourselves; WoW's own layout cache would interfere.
         f:SetUserPlaced(false)
         self.isMoving = false
         local x, y = f:GetCenter()
@@ -56,7 +56,7 @@ function InfoText:Init()
         self:Anchor()
         self:UpdateMouse()
     end)
-    -- Shift + Rechtsklick: zurück an den automatischen Platz über den Aktionsleisten.
+    -- Shift-right-click: back to the automatic place above the action bars.
     f:SetScript("OnMouseUp", function(_, button)
         if button == "RightButton" and IsShiftKeyDown() then
             XPForeverDB.infoPoint = nil
@@ -75,15 +75,15 @@ function InfoText:Init()
     end)
     f:SetScript("OnLeave", GameTooltip_Hide)
 
-    -- Ohne Shift ist der Text für die Maus durchlässig (Klicks und Kameradrehen darunter gehen normal).
+    -- Without Shift the text ignores the mouse (clicks and camera turning underneath work normally).
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
     f:SetScript("OnEvent", function() self:UpdateMouse() end)
 
-    -- Aktionsleisten können sich im Edit Mode verschieben.
+    -- Action bars can move in Edit Mode.
     EventRegistry:RegisterCallback("EditMode.Exit", function() self:Anchor() end, self)
 end
 
--- Maus nur bei gedrückter Shift-Taste annehmen; dann auch den Verschiebe-Rahmen zeigen.
+-- Only accept the mouse while Shift is held; then also show the move highlight.
 function InfoText:UpdateMouse()
     local movable = IsShiftKeyDown() or self.isMoving
     self.frame:EnableMouse(movable)
@@ -113,10 +113,10 @@ function InfoText:Anchor()
         return
     end
 
-    -- Automatisch: über der höchsten sichtbaren Leiste im unteren Block, mittig zur XP-Leiste.
+    -- Automatic: above the highest visible bar of the bottom stack, centered on the experience bar.
     local top, centerX
     local bars = { ns.Bar.frame, MainActionBar, MultiBarBottomLeft, MultiBarBottomRight }
-    -- Blizzard-Container mit z. B. der Rufleiste (der XP-Container ist von unserer Leiste verdeckt).
+    -- Blizzard containers holding e.g. the reputation bar (the XP container is covered by our bar).
     for _, container in ipairs(StatusTrackingBarManager and StatusTrackingBarManager.barContainers or {}) do
         table.insert(bars, container)
     end

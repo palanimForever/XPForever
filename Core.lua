@@ -1,17 +1,17 @@
 local addonName, ns = ...
 local L = ns.L
 
--- Einstiegspunkt: Standardeinstellungen, Events, regelmäßige Aktualisierung und Chat-Befehle.
--- Ladereihenfolge (siehe .toc): embeds.xml (Libs) → Locale → Core → Stats → Text → Bar → InfoText
+-- Entry point: default settings, events, periodic updates and slash commands.
+-- Load order (see .toc): embeds.xml (libs) → Locale → Core → Stats → Text → Bar → InfoText
 -- → MinimapButton → Options.
 
-local REFRESH_DELAY = 0.1 -- Sekunden; fasst zusammengehörige Events zu einem Neuzeichnen zusammen
-local QUEST_UPDATE_DELAY = 0.5 -- QUEST_LOG_UPDATE feuert sehr oft und wird gebündelt
-local TICK_INTERVAL = 5 -- Sekunden; für zeitabhängige Werte wie XP/h und Zeit bis Level-up
+local REFRESH_DELAY = 0.1 -- seconds; merges related events into a single redraw
+local QUEST_UPDATE_DELAY = 0.5 -- QUEST_LOG_UPDATE fires very often and is batched
+local TICK_INTERVAL = 5 -- seconds; for time-based values like XP/h and time to level
 
--- Account-weite Einstellungen. Farben als Hex-Strings ("ffRRGGBB"), wie sie der Farbwähler der Settings liefert.
+-- Account-wide settings. Colors are hex strings ("ffRRGGBB"), as returned by the settings color picker.
 ns.defaults = {
-    -- Leiste
+    -- Bar
     barStyle = "modern", -- "modern" | "classic"
     height = 22,
     showSegments = true,
@@ -22,7 +22,7 @@ ns.defaults = {
     showRestIndicator = true,
     showTooltip = true,
     showMinimapButton = true,
-    minimap = {}, -- Position des Minimap-Buttons, verwaltet von LibDBIcon
+    minimap = {}, -- minimap button position, managed by LibDBIcon
     barTextMode = "hover", -- "hover" | "always" | "never"
     barLevel = true,
     barXP = true,
@@ -35,20 +35,20 @@ ns.defaults = {
     barKills = false,
     barSession = false,
 
-    -- Farben
+    -- Colors
     colorXP = "ff9954f5",
     colorQuest = "ffffb32e",
     colorRested = "ff3894ff",
-    questOpacity = 45, -- Prozent
-    restedOpacity = 30, -- Prozent
+    questOpacity = 45, -- percent
+    restedOpacity = 30, -- percent
     fillGradient = true,
 
-    -- Info-Text
+    -- Info text
     infoEnabled = true,
     infoPosition = "auto", -- "auto" | "free"
     infoOffset = 4,
     infoFontSize = 12,
-    infoPoint = nil, -- { x, y } bei freier Position
+    infoPoint = nil, -- { x, y } when placed freely
     infoLevel = false,
     infoXP = false,
     infoRemaining = false,
@@ -60,18 +60,18 @@ ns.defaults = {
     infoKills = true,
     infoSession = false,
 
-    -- Statistik
-    rateWindow = 600, -- Sekunden, 0 = ganze Sitzung
+    -- Statistics
+    rateWindow = 600, -- seconds, 0 = whole session
 }
 
--- Branding: Autor und Markenfarbe an einer Stelle, damit alle Palanim-Addons gleich auftreten.
+-- Branding: author and brand color in one place so all Palanim addons look the same.
 ns.AUTHOR = "Palanim"
 ns.BRAND_COLOR = CreateColorFromHexString("ff9966ff")
--- Der Packager ersetzt @project-version@ beim Release durch den Git-Tag; lokal steht der Platzhalter.
+-- The packager replaces @project-version@ with the git tag on release; locally the placeholder remains.
 local version = C_AddOns.GetAddOnMetadata(addonName, "Version") or ""
 ns.VERSION = version:find("^@") and "dev" or version
 
--- "XPForever von Palanim", Addon-Name in der Markenfarbe.
+-- "XPForever by Palanim", addon name in the brand color.
 function ns.BrandLine()
     return ns.BRAND_COLOR:WrapTextInColorCode(addonName) .. " " .. L.byAuthor:format(ns.AUTHOR)
 end
@@ -80,7 +80,7 @@ function ns.Print(message)
     print(ns.BRAND_COLOR:WrapTextInColorCode(addonName) .. " " .. message)
 end
 
--- Alle sichtbaren Teile neu zeichnen bzw. Einstellungen neu anwenden.
+-- Redraw all visible parts or re-apply the settings.
 function ns.Refresh()
     ns.Bar:Refresh()
     ns.InfoText:Refresh()
@@ -93,13 +93,13 @@ function ns.ApplySettings()
     ns.Refresh()
 end
 
--- Standardwert einer Einstellung; Tabellen werden kopiert, damit Defaults nie mitverändert werden.
+-- Default value of a setting; tables are copied so the defaults are never modified.
 function ns.GetDefault(key)
     local value = ns.defaults[key]
     return type(value) == "table" and CopyTable(value) or value
 end
 
--- Info-Text ein-/ausblenden (Linksklick auf die Leiste, Rechtsklick auf den Minimap-Button).
+-- Show/hide the info text (left-click on the bar, right-click on the minimap button).
 function ns.ToggleInfoText()
     local show = not XPForeverDB.infoEnabled
     ns.Options:SetValue("infoEnabled", show)
@@ -112,8 +112,8 @@ function ns.ResetSession()
     ns.Print(L.sessionReset)
 end
 
--- Bei einer Quest-Abgabe kommen PLAYER_XP_UPDATE und QUEST_TURNED_IN kurz nacheinander (Reihenfolge
--- nicht garantiert). Kurz gesammelt neu zeichnen, damit XP und Quest-Vorschau in einem Schritt wechseln.
+-- On a quest turn-in, PLAYER_XP_UPDATE and QUEST_TURNED_IN arrive shortly after each other (order not
+-- guaranteed). Redraw once after a short delay so XP and the quest preview change in a single step.
 local refreshPending = false
 local function ScheduleRefresh()
     if refreshPending then return end
@@ -135,7 +135,7 @@ local function ScheduleQuestUpdate()
     end)
 end
 
--- Zeitabhängige Texte (XP/h, Zeit bis Level-up) und die Position des Info-Texts nachführen.
+-- Keep time-based texts (XP/h, time to level) and the info text position up to date.
 local function Tick()
     ns.Bar:RefreshText()
     ns.InfoText:Anchor()
@@ -152,11 +152,11 @@ function handlers.ADDON_LOADED(name)
     XPForeverDB = XPForeverDB or {}
     XPForeverCharDB = XPForeverCharDB or {}
 
-    -- Alte Einstellungen aus v0.1 übernehmen.
+    -- Migrate settings from older versions.
     if XPForeverDB.alwaysShowText then XPForeverDB.barTextMode = "always" end
     XPForeverDB.alwaysShowText = nil
     XPForeverDB.probe = nil
-    XPForeverDB.infoLocked = nil -- Option entfallen (Verschieben jetzt per Shift + Ziehen)
+    XPForeverDB.infoLocked = nil -- option removed (moving is now Shift-drag)
 
     for key in pairs(ns.defaults) do
         if XPForeverDB[key] == nil then XPForeverDB[key] = ns.GetDefault(key) end
@@ -166,7 +166,7 @@ function handlers.ADDON_LOADED(name)
     ns.MinimapButton:Init()
 end
 
--- Feuert auch nach jedem Ladebildschirm; Init-Funktionen laufen nur beim ersten Mal.
+-- Also fires after every loading screen; the init functions only run the first time.
 function handlers.PLAYER_ENTERING_WORLD(isInitialLogin)
     if isInitialLogin or not ns.Stats.HasSession() then
         ns.Stats.ResetSession()
@@ -206,8 +206,8 @@ end
 frame:SetScript("OnEvent", function(_, event, ...) handlers[event](...) end)
 for event in pairs(handlers) do frame:RegisterEvent(event) end
 
--- Rechenzeit (Blizzards AddOn-Profiler, läuft ohnehin immer) und Speicher. Liest die Werte nur
--- im Moment des Aufrufs aus; das Ergebnis landet auch in XPForeverDB.perf (nach /reload lesbar).
+-- CPU time (Blizzard's addon profiler, which always runs anyway) and memory. Reads the values only
+-- when called; the result is also stored in XPForeverDB.perf (readable after /reload).
 local function ReportPerformance()
     local metric = Enum.AddOnProfilerMetric
     local result = { time = date("%Y-%m-%d %H:%M:%S") }
@@ -230,8 +230,8 @@ local function ReportPerformance()
     ns.Print(L.perfMemory:format(result.memoryKB))
 end
 
--- Entwickler-Diagnose: Zustand von Blizzards XP-Leisten und Erholungs-Markern (nach /reload in
--- XPForeverDB.debug lesbar).
+-- Developer diagnostics: state of Blizzard's experience bars and rested markers (readable after /reload
+-- in XPForeverDB.debug).
 local function ReportBlizzardBars()
     local result = {}
     local xpIndex = StatusTrackingBarInfo and StatusTrackingBarInfo.BarsEnum.Experience

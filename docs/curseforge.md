@@ -1,8 +1,8 @@
 <!--
-Vorlage für die CurseForge-Projektseite (Sprache: Englisch).
-Beim Anlegen des Projekts die Felder unten übernehmen; die Beschreibung im Markdown-Modus einfügen.
-Bilder kommen aus dem öffentlichen GitHub-Repo (raw.githubusercontent.com) – erst funktionsfähig nach dem ersten Push.
-Diese Datei ist per .pkgmeta vom Spieler-Download ausgeschlossen.
+Template for the CurseForge project page.
+Copy the fields below when editing the project; paste the description in Markdown mode.
+Images are loaded from this GitHub repository (raw.githubusercontent.com).
+This file is excluded from the player download via .pkgmeta.
 -->
 
 # Project fields
@@ -11,7 +11,7 @@ Diese Datei ist per .pkgmeta vom Spieler-Download ausgeschlossen.
 - **Summary:** A cleaner experience bar for WoW Forever with quest XP and rested XP previews, XP per hour, time to level and kills to level.
 - **Logo:** `docs/images/logo.png` (256 × 256)
 - **Main category:** Quests & Leveling
-- **Additional categories:** Action Bars, Map & Minimap (exakte Namen im Dropdown prüfen)
+- **Additional categories:** Action Bars, Map & Minimap
 - **License:** MIT License
 - **Source:** https://github.com/palanimForever/XPForever
 - **Issues:** https://github.com/palanimForever/XPForever/issues
@@ -110,4 +110,4 @@ Everything lives in **Options → AddOns → XPForever**: height, segments, colo
 | options-colors.png | Colors | Choose colors and opacity for XP, quest XP and rested XP |
 | options-info-text.png | Info text settings | Pick exactly which values the info text shows |
 | bar-no-quest-xp.png | Without quest XP preview | Every preview can be turned off |
-| minimap.png *(noch aufnehmen)* | Minimap button | Quick summary and access to the settings |
+| minimap.png *(to do)* | Minimap button | Quick summary and access to the settings |

@@ -1,7 +1,7 @@
-# BigWigs Packager: baut das Release-ZIP und lädt es hoch (siehe .github/workflows/release.yml).
+# BigWigs packager: builds the release zip and uploads it (see .github/workflows/release.yml).
 package-as: XPForever
 
-# Gepflegter Changelog statt automatischer Commit-Liste; erscheint auf CurseForge und im GitHub-Release.
+# Curated changelog instead of the commit list; shown on CurseForge and in the GitHub release.
 manual-changelog:
   filename: CHANGELOG.md
   markup-type: markdown

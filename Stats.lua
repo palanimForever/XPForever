@@ -1,17 +1,17 @@
 local addonName, ns = ...
 
--- XP-Stand, Quest-XP und Sitzungsstatistik (XP/h, Kills bis Level-up).
--- Sitzungsdaten liegen in XPForeverCharDB, damit sie ein /reload überstehen.
+-- XP state, quest XP and session statistics (XP/h, kills to level).
+-- Session data lives in XPForeverCharDB so it survives a /reload.
 
 local GAIN_HISTORY_SECONDS = 3600
 local KILL_SAMPLES = 10
-local MAX_KILL_SHARE = 0.25 -- größere Einzelgewinne (Entdeckung, Sonderbelohnung) zählen nicht als Kill
-local CLASSIFY_DELAY = 0.5 -- so lange wird ein XP-Gewinn zurückgehalten, um Quest-Abgaben zuzuordnen
+local MAX_KILL_SHARE = 0.25 -- larger single gains (discovery, special rewards) don't count as kills
+local CLASSIFY_DELAY = 0.5 -- how long an XP gain is held back to match quest turn-ins
 local QUEST_MATCH_WINDOW = 2
-local TURNED_IN_MEMORY = 10 -- Sekunden, die eine abgegebene Quest aus der Quest-XP ausgeschlossen bleibt
+local TURNED_IN_MEMORY = 10 -- seconds a turned-in quest stays excluded from quest XP
 local MIN_RATE_SECONDS = 60
 
--- Aktueller XP-Stand, wird von Leiste, Info-Text und Textbausteinen gelesen.
+-- Current XP state, read by the bar, the info text and the text items.
 local state = { xp = 0, max = 1, level = 1, rested = 0, questXP = 0, questCount = 0 }
 ns.state = state
 
@@ -38,8 +38,8 @@ function Stats.HasSession()
     return db.session and db.gains and db.kills
 end
 
--- Kill-Erkennung: Jeder XP-Gewinn wird kurz zurückgehalten. Kommt in der Zeit ein QUEST_TURNED_IN,
--- wird dessen XP abgezogen. Was übrig bleibt, zählt als Kill.
+-- Kill detection: every XP gain is held back briefly. If a QUEST_TURNED_IN arrives meanwhile,
+-- its XP is subtracted. Whatever remains counts as a kill.
 local function ClassifyGain(amount)
     C_Timer.After(CLASSIFY_DELAY, function()
         local questPart = math.min(amount, recentQuestXP)
@@ -91,8 +91,8 @@ function Stats.UpdateQuestXP()
     state.questXP, state.questCount = total, count
 end
 
--- Gerade abgegebene Quests können noch kurz im Questlog stehen, zählen aber nicht mehr als Quest-XP.
--- Ihre XP wird außerdem für die Kill-Erkennung vorgemerkt.
+-- Quests just turned in may stay in the quest log briefly but no longer count as quest XP.
+-- Their XP is also remembered for the kill detection.
 function Stats.OnQuestTurnedIn(questID, xpReward)
     turnedInQuests[questID] = true
     C_Timer.After(TURNED_IN_MEMORY, function() turnedInQuests[questID] = nil end)
@@ -100,7 +100,7 @@ function Stats.OnQuestTurnedIn(questID, xpReward)
 
     xpReward = xpReward or 0
     recentQuestXP = recentQuestXP + xpReward
-    -- Nicht verbrauchte Quest-XP nach kurzer Zeit verwerfen, damit spätere Kills nicht verschluckt werden.
+    -- Drop unmatched quest XP after a short time so later kills aren't swallowed.
     C_Timer.After(QUEST_MATCH_WINDOW, function()
         recentQuestXP = math.max(0, recentQuestXP - xpReward)
     end)
@@ -114,7 +114,7 @@ function ns.IsQuestReady()
     return state.questXP > 0 and state.xp + state.questXP >= state.max
 end
 
--- XP pro Sekunde über den eingestellten Zeitraum, nil solange zu wenig Daten vorliegen.
+-- XP per second over the configured period, nil while there is too little data.
 function ns.GetRate()
     local db = CharDB()
     local now = time()
@@ -140,7 +140,7 @@ function ns.GetTimeToLevel()
     return rate and (state.max - state.xp) / rate
 end
 
--- Geschätzte Kills bis Level-up aus dem Durchschnitt der letzten Kills.
+-- Estimated kills to level, based on the average of the recent kills.
 function ns.GetKillsToLevel()
     local kills = CharDB().kills
     if #kills == 0 then return nil end
