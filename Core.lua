@@ -230,6 +230,37 @@ local function ReportPerformance()
     ns.Print(L.perfMemory:format(result.memoryKB))
 end
 
+-- Entwickler-Diagnose: Zustand von Blizzards XP-Leisten und Erholungs-Markern (nach /reload in
+-- XPForeverDB.debug lesbar).
+local function ReportBlizzardBars()
+    local result = {}
+    local xpIndex = StatusTrackingBarInfo and StatusTrackingBarInfo.BarsEnum.Experience
+    for i, container in ipairs(StatusTrackingBarManager and StatusTrackingBarManager.barContainers or {}) do
+        local bar = container.bars and container.bars[xpIndex]
+        local tick = bar and bar.ExhaustionTick
+        local entry = {
+            container = container:GetName() or tostring(i),
+            shownBarIndex = container.shownBarIndex,
+            containerShown = container:IsShown(),
+        }
+        if bar then
+            entry.barAlpha, entry.barEffectiveAlpha = bar:GetAlpha(), bar:GetEffectiveAlpha()
+            entry.barShown = bar:IsShown()
+        end
+        if tick then
+            entry.tickAlpha, entry.tickEffectiveAlpha = tick:GetAlpha(), tick:GetEffectiveAlpha()
+            entry.tickShown, entry.tickVisible = tick:IsShown(), tick:IsVisible()
+            entry.tickStrata, entry.tickIgnoreParentAlpha = tick:GetFrameStrata(), tick:IsIgnoringParentAlpha()
+            local normal = tick:GetNormalTexture()
+            entry.tickTextureAlpha = normal and normal:GetAlpha()
+        end
+        table.insert(result, entry)
+        ns.Print(string.format("%s: Marker sichtbar=%s, Alpha=%.2f (effektiv %.2f)", entry.container,
+            tostring(entry.tickVisible), entry.tickAlpha or -1, entry.tickEffectiveAlpha or -1))
+    end
+    XPForeverDB.debug = result
+end
+
 SLASH_XPFOREVER1 = "/xpf"
 SlashCmdList.XPFOREVER = function(msg)
     msg = strtrim(msg):lower()
@@ -239,6 +270,8 @@ SlashCmdList.XPFOREVER = function(msg)
         ns.ResetSession()
     elseif msg == "perf" then
         ReportPerformance()
+    elseif msg == "debug" then
+        ReportBlizzardBars()
     elseif msg == "style" then
         ns.Options:ShowStylePrompt()
     else
