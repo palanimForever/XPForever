@@ -84,7 +84,7 @@ One short line that stays in view while you quest. Choose from level, current XP
 
 ---
 
-<sub>Made by **Palanim** · Languages: English, Deutsch · [Source & issues on GitHub](https://github.com/palanimForever/XPForever)</sub>
+Made by **Palanim** · Languages: English, Deutsch · [Source & issues on GitHub](https://github.com/palanimForever/XPForever)
 
 ---
 
