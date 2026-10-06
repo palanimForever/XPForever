@@ -1,0 +1,28 @@
+# XPForever Changelog
+
+## Unreleased
+
+## 0.4.0-beta
+
+### New
+- Click the experience bar to show or hide the info text.
+- Hold Shift and drag the info text to place it anywhere. Shift-right-click puts it back above your action bars.
+- Tooltips show mouse icons for clicks.
+
+### Changed
+- The "Lock position" option for the info text is gone – it can no longer be moved by accident.
+
+## 0.3.0-beta
+
+First public release.
+
+- A thicker experience bar in the Forever style, placed where Blizzard's bar sits and following it in Edit Mode.
+- Previews for quest XP from completed quests and for rested XP, with adjustable colors and opacity.
+- Percentage in the middle of the bar, more details on mouseover.
+- Info text above your action bars: XP per hour, time to level, kills to level and more – each value can be turned on or off.
+- Kills to level, estimated from your recent kills with quest turn-ins left out.
+- A golden glow and "Zzz" while you rest in an inn or a city.
+- Smooth animations when you gain XP or level up.
+- Works with tracked reputations.
+- Minimap button and an entry in the addon menu at the minimap.
+- Settings in Options → AddOns → XPForever, English and German.
