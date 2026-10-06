@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.4.1-beta
+
+### Changed
+- Cleaned up the release notes. No changes to the addon itself.
+
 ## 0.4.0-beta
 
 ### New
