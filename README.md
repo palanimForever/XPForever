@@ -7,10 +7,8 @@
 **A cleaner, smarter experience bar for World of Warcraft: Forever.**
 See your XP, quest XP and rested XP at a glance – plus XP per hour, time to level and kills to level.
 
-<!-- Badges werden aktiviert, sobald die CurseForge-Projekt-ID feststeht:
-[![CurseForge downloads](https://img.shields.io/curseforge/dt/PROJECT_ID?label=CurseForge&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
-[![CurseForge version](https://img.shields.io/curseforge/v/PROJECT_ID?label=version&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
--->
+[![CurseForge downloads](https://img.shields.io/curseforge/dt/1729338?label=CurseForge&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
+[![CurseForge version](https://img.shields.io/curseforge/v/1729338?label=version&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
 [![License: MIT](https://img.shields.io/badge/license-MIT-9966ff)](LICENSE)
 ![Game: WoW Forever](https://img.shields.io/badge/WoW-Forever%201.60-9e7a45)
 

@@ -67,7 +67,9 @@ ns.defaults = {
 -- Branding: Autor und Markenfarbe an einer Stelle, damit alle Palanim-Addons gleich auftreten.
 ns.AUTHOR = "Palanim"
 ns.BRAND_COLOR = CreateColorFromHexString("ff9966ff")
-ns.VERSION = C_AddOns.GetAddOnMetadata(addonName, "Version") or ""
+-- Der Packager ersetzt @project-version@ beim Release durch den Git-Tag; lokal steht der Platzhalter.
+local version = C_AddOns.GetAddOnMetadata(addonName, "Version") or ""
+ns.VERSION = version:find("^@") and "dev" or version
 
 -- "XPForever von Palanim", Addon-Name in der Markenfarbe.
 function ns.BrandLine()

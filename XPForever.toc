@@ -6,7 +6,9 @@
 ## Category: Quests
 ## Category-deDE: Quests
 ## IconTexture: Interface\AddOns\XPForever\Media\icon
-## Version: 0.3.0-dev
+## Version: @project-version@
+## X-Curse-Project-ID: 1729338
+## X-Website: https://github.com/palanimForever/XPForever
 ## SavedVariables: XPForeverDB
 ## SavedVariablesPerCharacter: XPForeverCharDB
 ## OptionalDeps: LibDBIcon-1.0

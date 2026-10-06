@@ -260,8 +260,12 @@ translations.deDE = {
     optResetSettingsConfirm = "Alle Einstellungen von XPForever auf Standard zurücksetzen?\n\nDas lässt sich nicht rückgängig machen.",
 }
 
-for key, text in pairs(translations[GetLocale()] or {}) do
+-- Entwicklung: Addon-Sprache erzwingen (z. B. "enUS" für Screenshots auf einem deutschen Client), sonst nil.
+local FORCE_LOCALE = nil
+
+for key, text in pairs(translations[FORCE_LOCALE or GetLocale()] or {}) do
     L[key] = text
 end
 
 ns.L = L
+ns.FORCE_LOCALE = FORCE_LOCALE
