@@ -601,8 +601,7 @@ function Bar:Draw(display)
     self.spark:ClearAllPoints()
     self.spark:SetPoint("TOP", self.inner, "TOPLEFT", x, 0)
     self.spark:SetPoint("BOTTOM", self.inner, "BOTTOMLEFT", x, 0)
-    -- Blizzards Leiste hat keine Leuchtkante; im Classic-Stil weglassen.
-    self.spark:SetShown(display.xp > 0 and display.xp < 1 and not IsClassic())
+    self.spark:SetShown(display.xp > 0 and display.xp < 1)
 end
 
 -- Neu gewonnener Abschnitt leuchtet kurz in einer aufgehellten XP-Farbe auf.
