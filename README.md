@@ -21,6 +21,7 @@ by **Palanim**
 ## Highlights
 
 - **A bar you can read** – thicker than the default bar, in the Forever style, with 20 segments
+- **Two styles** – the modern bar, or a classic one that looks like Blizzard's own with all the same features
 - **Quest XP preview** – see how much XP your completed quests give before you turn them in
 - **Rested XP preview** – see exactly how far your rested bonus reaches
 - **XP per hour, time to level, kills to level** – right above your action bars
@@ -37,6 +38,18 @@ by **Palanim**
 Your XP, the XP from completed quests and your rested XP in clear, separate colors. Quest XP and rested XP are shown as a subtle preview behind your XP, so you always know where the next turn-in takes you. The percentage sits in the middle of the bar.
 
 <img src="docs/images/bar-colors.png" alt="Experience bar with quest XP and rested XP" width="900">
+
+### Modern or Classic
+
+Pick the look that suits your UI. **Modern** is a thicker bar with a bronze border and segments. **Classic** keeps Blizzard's original experience bar and adds everything XPForever offers: quest XP and rested XP previews, animations, the golden rested glow and your own colors. On first start XPForever asks which one you like; switch any time in the settings or with `/xpf style`.
+
+**Modern**
+
+<img src="docs/images/style-modern.png" alt="Modern style" width="900">
+
+**Classic**
+
+<img src="docs/images/style-classic.png" alt="Classic style" width="900">
 
 ### Details on mouseover
 
@@ -68,7 +81,7 @@ While you rest in an inn or a city, the frame of the bar glows softly in gold an
 
 ### Settings
 
-Everything is configurable in *Options → AddOns → XPForever*: height, segments, colors and opacity, what the bar text and the info text show, how XP per hour is calculated and more.
+Everything is configurable in *Options → AddOns → XPForever*: style, height, segments, colors and opacity, what the bar text and the info text show, how XP per hour is calculated and more.
 
 <p>
 <img src="docs/images/options.png" alt="XPForever settings" width="32%">
@@ -90,6 +103,7 @@ Drag it around the minimap. Left-click opens the settings, right-click shows or 
 | <kbd>Shift</kbd>-drag the info text | Move it anywhere |
 | <kbd>Shift</kbd>-right-click the info text | Put it back above the action bars |
 | `/xpf` | Open settings |
+| `/xpf style` | Choose between Modern and Classic |
 | `/xpf reset` | Reset session statistics |
 | `/xpf perf` | Show CPU time and memory usage |
 

@@ -28,6 +28,7 @@ This file is excluded from the player download via .pkgmeta.
 ## Highlights
 
 - **A bar you can read** – thicker than the default bar, in the Forever style, with 20 segments
+- **Two styles** – the modern bar, or a classic one that looks like Blizzard's own with all the same features
 - **Quest XP preview** – see how much XP your completed quests give before you turn them in
 - **Rested XP preview** – see exactly how far your rested bonus reaches
 - **XP per hour, time to level, kills to level** – right above your action bars
@@ -41,6 +42,18 @@ This file is excluded from the player download via .pkgmeta.
 Your XP, quest XP and rested XP in clear, separate colors. Quest XP and rested XP appear as a subtle preview behind your XP, so you always know where the next turn-in takes you.
 
 ![Experience bar](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/bar-colors.png)
+
+## Modern or Classic
+
+Pick the look that suits your UI. **Modern** is a thicker bar with a bronze border and segments. **Classic** keeps Blizzard's original experience bar and adds everything XPForever offers: quest XP and rested XP previews, animations, the golden rested glow and your own colors. On first start XPForever asks which one you like; switch any time in the settings or with **/xpf style**.
+
+**Modern**
+
+![Modern style](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/style-modern.png)
+
+**Classic**
+
+![Classic style](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/style-classic.png)
 
 ## Details on mouseover
 
@@ -72,7 +85,7 @@ While you rest in an inn or a city, the bar glows softly in gold and a small "Zz
 
 ## Settings
 
-Everything lives in **Options → AddOns → XPForever**: height, segments, colors and opacity, bar text and info text contents, XP per hour calculation and more. Open it with **/xpf**, a right-click on the bar or the minimap button.
+Everything lives in **Options → AddOns → XPForever**: style, height, segments, colors and opacity, bar text and info text contents, XP per hour calculation and more. Open it with **/xpf**, a right-click on the bar or the minimap button.
 
 ![Settings](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/options.png)
 
@@ -83,7 +96,7 @@ Everything lives in **Options → AddOns → XPForever**: height, segments, colo
 - **Ctrl-click the bar** – reset session statistics
 - **Right-click the bar** – open settings
 - **Shift-drag the info text** – move it anywhere · **Shift-right-click** – back above the action bars
-- **/xpf** – open settings · **/xpf reset** – reset session · **/xpf perf** – CPU time and memory
+- **/xpf** – open settings · **/xpf style** – Modern or Classic · **/xpf reset** – reset session · **/xpf perf** – CPU time and memory
 
 ## FAQ
 
@@ -103,6 +116,8 @@ Everything lives in **Options → AddOns → XPForever**: height, segments, colo
 |---|---|---|
 | hero.png | XPForever in the game | The new experience bar with info text above the action bars |
 | bar-colors.png | XP, quest XP and rested XP | Clear colors for your XP and the previews behind it |
+| style-modern.png | Modern style | A thicker bar with a bronze border and segments |
+| style-classic.png | Classic style | Blizzard's original look with all XPForever features |
 | bar-hover.png | Details on mouseover | Bar text and tooltip with session statistics |
 | info-text.png | Info text | XP per hour, time to level and kills to level above your action bars |
 | resting.png | Resting | Golden glow and "Zzz" while you rest |
