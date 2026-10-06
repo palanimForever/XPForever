@@ -17,18 +17,6 @@ StaticPopupDialogs["XPFOREVER_RESET_SETTINGS"] = {
     timeout = 0,
 }
 
--- Einmalige Stilwahl beim ersten Start (auch für Spieler, die von einer älteren Version kommen).
-StaticPopupDialogs["XPFOREVER_CHOOSE_STYLE"] = {
-    text = L.stylePrompt,
-    button1 = L.optStyleModern,
-    button2 = L.optStyleClassic,
-    OnButton1 = function() Options:SetValue("barStyle", "modern") end,
-    OnButton2 = function() Options:SetValue("barStyle", "classic") end,
-    hideOnEscape = true,
-    whileDead = true,
-    timeout = 0,
-}
-
 local function Header(category, text)
     local layout = SettingsPanel:GetLayout(category)
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text))
@@ -245,8 +233,68 @@ function Options:ShowStylePromptOnce()
             return
         end
         XPForeverDB.stylePromptSeen = true
-        StaticPopup_Show("XPFOREVER_CHOOSE_STYLE")
+        self:ShowStylePrompt()
     end)
+end
+
+-- Kleines Auswahlfenster oben in der Mitte: Modern / Klassisch nebeneinander. Ein Klick schaltet die
+-- Leiste sofort live um, man sieht die Wirkung direkt. Bewusst nicht in UISpecialFrames (ESC), weil das
+-- Eintragen dort Blizzards Fenster-Code verunreinigen kann (siehe Taint-Log zu AtlasLoot).
+local PROMPT_WIDTH, PROMPT_HEIGHT = 300, 150
+local PROMPT_BUTTON_WIDTH, PROMPT_BUTTON_HEIGHT = 120, 30
+
+function Options:UpdateStylePrompt()
+    local prompt = self.stylePrompt
+    if not prompt then return end
+    for style, button in pairs(prompt.buttons) do
+        if XPForeverDB.barStyle == style then button:LockHighlight() else button:UnlockHighlight() end
+    end
+end
+
+function Options:ShowStylePrompt()
+    local prompt = self.stylePrompt
+    if not prompt then
+        prompt = CreateFrame("Frame", "XPForeverStylePrompt", UIParent, "DialogBorderTemplate")
+        prompt:SetSize(PROMPT_WIDTH, PROMPT_HEIGHT)
+        prompt:SetPoint("TOP", 0, -140)
+        prompt:SetFrameStrata("DIALOG")
+        prompt:SetToplevel(true)
+        prompt:EnableMouse(true)
+
+        local title = prompt:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+        title:SetPoint("TOP", 0, -20)
+        title:SetText(addonName)
+
+        prompt.buttons = {}
+        for index, entry in ipairs({ { "modern", L.optStyleModern }, { "classic", L.optStyleClassic } }) do
+            local button = CreateFrame("Button", nil, prompt, "UIPanelButtonTemplate")
+            button:SetSize(PROMPT_BUTTON_WIDTH, PROMPT_BUTTON_HEIGHT)
+            button:SetPoint("TOP", (index == 1 and -1 or 1) * (PROMPT_BUTTON_WIDTH / 2 + 6), -52)
+            button:SetText(entry[2])
+            button:SetScript("OnClick", function()
+                self:SetValue("barStyle", entry[1])
+                self:UpdateStylePrompt()
+            end)
+            prompt.buttons[entry[1]] = button
+        end
+
+        local hint = prompt:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+        hint:SetPoint("TOP", 0, -92)
+        hint:SetText(L.stylePromptHint)
+
+        local ok = CreateFrame("Button", nil, prompt, "UIPanelButtonTemplate")
+        ok:SetSize(100, 24)
+        ok:SetPoint("BOTTOM", 0, 16)
+        ok:SetText(OKAY)
+        ok:SetScript("OnClick", function() prompt:Hide() end)
+
+        local close = CreateFrame("Button", nil, prompt, "UIPanelCloseButton")
+        close:SetPoint("TOPRIGHT", -2, -2)
+
+        self.stylePrompt = prompt
+    end
+    self:UpdateStylePrompt()
+    prompt:Show()
 end
 
 -- Einstellung von außen ändern (z. B. per Minimap-Klick), damit das Optionsfenster mitzieht.

@@ -239,8 +239,11 @@ SlashCmdList.XPFOREVER = function(msg)
         ns.ResetSession()
     elseif msg == "perf" then
         ReportPerformance()
+    elseif msg == "style" then
+        ns.Options:ShowStylePrompt()
     else
         ns.Print("/xpf  –  " .. L.helpOptions)
+        ns.Print("/xpf style  –  " .. L.helpStyle)
         ns.Print("/xpf reset  –  " .. L.helpReset)
         ns.Print("/xpf perf  –  " .. L.helpPerf)
     end

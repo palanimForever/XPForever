@@ -81,10 +81,8 @@ local L = {
     optStyleTip = "Modern: a thicker bar in the XPForever look. Classic: looks like Blizzard's experience bar but keeps all XPForever features. In Classic, height, segments and the XP and rested colors don't apply.",
     optStyleModern = "Modern",
     optStyleClassic = "Classic",
-    stylePrompt = "Welcome to XPForever!\n\nWhich look do you prefer for your experience bar?\n\n"
-        .. "|cffffd100Modern|r – a thicker bar in the XPForever style\n"
-        .. "|cffffd100Classic|r – looks like Blizzard's bar, with all XPForever features\n\n"
-        .. "You can change this anytime in the settings.",
+    stylePromptHint = "You can change this anytime in the settings.",
+    helpStyle = "choose Modern or Classic style",
     optHeight = "Height",
     optHeightTip = "Height of the experience bar in pixels.",
     optSegments = "Show segments",
@@ -221,10 +219,8 @@ translations.deDE = {
     optStyle = "Stil",
     optStyleTip = "Modern: eine dickere Leiste im XPForever-Look. Klassisch: sieht aus wie Blizzards Erfahrungsleiste, behält aber alle Funktionen von XPForever. Im klassischen Stil gelten Höhe, Segmente sowie die Farben für XP und Erholung nicht.",
     optStyleClassic = "Klassisch",
-    stylePrompt = "Willkommen bei XPForever!\n\nWelchen Look möchtest du für deine Erfahrungsleiste?\n\n"
-        .. "|cffffd100Modern|r – eine dickere Leiste im XPForever-Stil\n"
-        .. "|cffffd100Klassisch|r – sieht aus wie Blizzards Leiste, mit allen Funktionen von XPForever\n\n"
-        .. "Du kannst das jederzeit in den Einstellungen ändern.",
+    stylePromptHint = "Jederzeit in den Einstellungen änderbar.",
+    helpStyle = "Stil Modern oder Klassisch wählen",
     optHeight = "Höhe",
     optHeightTip = "Höhe der Erfahrungsleiste in Pixeln.",
     optSegments = "Segmente anzeigen",
