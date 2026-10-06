@@ -16,7 +16,6 @@ local FLASH_DURATION = 0.8
 local CLASSIC_ATLAS = {
     background = "UI-HUD-ExperienceBar-Background",
     fillXP = "UI-HUD-ExperienceBar-Fill-Experience",
-    fillRested = "UI-HUD-ExperienceBar-Fill-Rested",
     prediction = "UI-HUD-ExperienceBar-Fill-Prediction",
 }
 local WHITE_COLOR = CreateColor(1, 1, 1)
@@ -363,8 +362,7 @@ local function IsClassic()
     return XPForeverDB.barStyle == "classic"
 end
 
--- Füllungen je nach Stil: modern einfarbig, classic mit Blizzards Texturen. Im Classic-Stil wechselt die
--- XP-Füllung wie im Original zwischen Lila und Blau, sobald Erholung vorhanden ist.
+-- Füllungen je nach Stil: modern einfarbig, classic mit Blizzards Texturen.
 function Bar:UpdateFills()
     local db = XPForeverDB
     local questColor, questAlpha = ns.GetColor("colorQuest"), db.questOpacity / 100
@@ -375,11 +373,12 @@ function Bar:UpdateFills()
         UseColorFill(self.restedFill, ns.GetColor("colorRested"), db.restedOpacity / 100)
         return
     end
-    local xpAtlas = state.rested > 0 and CLASSIC_ATLAS.fillRested or CLASSIC_ATLAS.fillXP
-    local style = xpAtlas .. questColor:GenerateHexColor() .. questAlpha
+    -- Blizzard färbt die XP blau, solange man erholt ist; neben der blauen Erholungs-Vorschau wären XP
+    -- und Erholung dann kaum zu unterscheiden. Deshalb bleibt die XP hier immer lila.
+    local style = questColor:GenerateHexColor() .. questAlpha
     if self.fillStyle == style then return end
     self.fillStyle = style
-    UseAtlasFill(self.xpFill, xpAtlas, WHITE_COLOR, 1)
+    UseAtlasFill(self.xpFill, CLASSIC_ATLAS.fillXP, WHITE_COLOR, 1)
     -- Quest-XP gibt es im Original nicht: entsättigte XP-Textur, in der Quest-Farbe eingefärbt.
     UseAtlasFill(self.questFill, CLASSIC_ATLAS.fillXP, questColor, questAlpha, true)
     UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
@@ -620,7 +619,7 @@ function Bar:Refresh()
         return
     end
     f:Show()
-    self:UpdateFills() -- Classic: XP-Textur wechselt mit der Erholung (Lila ↔ Blau)
+    self:UpdateFills()
 
     local target = ComputeTarget()
     local display = self.display
