@@ -3,5 +3,6 @@ package-as: XPForever
 
 ignore:
   - README.md
+  - docs
   - .github
   - .luacheckrc
