@@ -131,9 +131,6 @@ local function RegisterInfoPage(category)
     })
     DependsOn(position, enabled, IsEnabled)
 
-    local locked = Checkbox(category, "infoLocked", L.optInfoLocked, L.optInfoLockedTip)
-    DependsOn(locked, position, function() return IsEnabled() and XPForeverDB.infoPosition == "free" end)
-
     local offset = Slider(category, "infoOffset", L.optInfoOffset, L.optInfoOffsetTip, 0, 40, 1)
     DependsOn(offset, position, function() return IsEnabled() and XPForeverDB.infoPosition == "auto" end)
 

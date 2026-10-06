@@ -288,6 +288,8 @@ function Bar:Init()
         if button == "LeftButton" and IsControlKeyDown() then
             ns.ResetSession()
             if self.hovered and XPForeverDB.showTooltip then self:ShowTooltip() end
+        elseif button == "LeftButton" then
+            ns.ToggleInfoText()
         elseif button == "RightButton" then
             ns.Options:Open()
         end
@@ -570,6 +572,7 @@ function Bar:ShowTooltip()
     end
 
     tooltip:AddLine(" ")
+    tooltip:AddLine(L.hintToggleInfo, GRAY_FONT_COLOR:GetRGB())
     tooltip:AddLine(L.hintResetSession, GRAY_FONT_COLOR:GetRGB())
     tooltip:AddLine(L.hintOptions, GRAY_FONT_COLOR:GetRGB())
     tooltip:AddLine(" ")

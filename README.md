@@ -84,8 +84,11 @@ Drag it around the minimap. Left-click opens the settings, right-click shows or 
 | Action | Effect |
 |---|---|
 | Hover the bar | Show the bar text and the tooltip |
+| Click the bar | Show or hide the info text |
 | <kbd>Ctrl</kbd>-click the bar | Reset session statistics |
 | Right-click the bar | Open settings |
+| <kbd>Shift</kbd>-drag the info text | Move it anywhere |
+| <kbd>Shift</kbd>-right-click the info text | Put it back above the action bars |
 | `/xpf` | Open settings |
 | `/xpf reset` | Reset session statistics |
 | `/xpf perf` | Show CPU time and memory usage |

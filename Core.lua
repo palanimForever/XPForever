@@ -45,7 +45,6 @@ ns.defaults = {
     -- Info-Text
     infoEnabled = true,
     infoPosition = "auto", -- "auto" | "free"
-    infoLocked = true,
     infoOffset = 4,
     infoFontSize = 12,
     infoPoint = nil, -- { x, y } bei freier Position
@@ -99,6 +98,13 @@ function ns.GetDefault(key)
     return type(value) == "table" and CopyTable(value) or value
 end
 
+-- Info-Text ein-/ausblenden (Linksklick auf die Leiste, Rechtsklick auf den Minimap-Button).
+function ns.ToggleInfoText()
+    local show = not XPForeverDB.infoEnabled
+    ns.Options:SetValue("infoEnabled", show)
+    ns.Print(show and L.infoShown or L.infoHidden)
+end
+
 function ns.ResetSession()
     ns.Stats.ResetSession()
     ns.Refresh()
@@ -149,6 +155,7 @@ function handlers.ADDON_LOADED(name)
     if XPForeverDB.alwaysShowText then XPForeverDB.barTextMode = "always" end
     XPForeverDB.alwaysShowText = nil
     XPForeverDB.probe = nil
+    XPForeverDB.infoLocked = nil -- Option entfallen (Verschieben jetzt per Shift + Ziehen)
 
     for key in pairs(ns.defaults) do
         if XPForeverDB[key] == nil then XPForeverDB[key] = ns.GetDefault(key) end

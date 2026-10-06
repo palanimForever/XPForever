@@ -79,8 +79,10 @@ Everything lives in **Options → AddOns → XPForever**: height, segments, colo
 ## Usage
 
 - **Hover the bar** – bar text and tooltip
+- **Click the bar** – show or hide the info text
 - **Ctrl-click the bar** – reset session statistics
 - **Right-click the bar** – open settings
+- **Shift-drag the info text** – move it anywhere · **Shift-right-click** – back above the action bars
 - **/xpf** – open settings · **/xpf reset** – reset session · **/xpf perf** – CPU time and memory
 
 ## FAQ

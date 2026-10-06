@@ -27,50 +27,76 @@ function InfoText:Init()
     f:RegisterForDrag("LeftButton")
     self.frame = f
 
-    -- Nur sichtbar, solange der Text entsperrt ist und verschoben werden kann.
+    -- Rahmen, der nur bei gedrückter Shift-Taste erscheint und zeigt, dass der Text verschiebbar ist.
     local dragBackground = f:CreateTexture(nil, "BACKGROUND")
     dragBackground:SetAllPoints()
     dragBackground:SetColorTexture(0.3, 0.6, 1, 0.25)
+    dragBackground:Hide()
     self.dragBackground = dragBackground
 
     local text = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     text:SetPoint("CENTER")
     self.text = text
 
+    -- Verschieben mit Shift + Ziehen; danach gilt die Position als "frei".
     f:SetScript("OnDragStart", function()
+        if not IsShiftKeyDown() then return end
         self.isMoving = true
         f:StartMoving()
     end)
     f:SetScript("OnDragStop", function()
+        if not self.isMoving then return end
         f:StopMovingOrSizing()
         -- Position speichern wir selbst, WoWs eigene Layout-Speicherung würde dazwischenfunken.
         f:SetUserPlaced(false)
         self.isMoving = false
         local x, y = f:GetCenter()
         XPForeverDB.infoPoint = { x = x, y = y }
+        ns.Options:SetValue("infoPosition", "free")
         self:Anchor()
+        self:UpdateMouse()
+    end)
+    -- Shift + Rechtsklick: zurück an den automatischen Platz über den Aktionsleisten.
+    f:SetScript("OnMouseUp", function(_, button)
+        if button == "RightButton" and IsShiftKeyDown() then
+            XPForeverDB.infoPoint = nil
+            ns.Options:SetValue("infoPosition", "auto")
+            self:Anchor()
+        end
     end)
     f:SetScript("OnEnter", function()
         GameTooltip:SetOwner(f, "ANCHOR_TOP")
-        GameTooltip:SetText(L.infoDragHint)
+        GameTooltip:SetText(ns.BrandLine())
+        GameTooltip:AddLine(L.infoDragHint, GRAY_FONT_COLOR:GetRGB())
+        GameTooltip:AddLine(L.infoResetHint, GRAY_FONT_COLOR:GetRGB())
         GameTooltip:Show()
     end)
     f:SetScript("OnLeave", GameTooltip_Hide)
+
+    -- Ohne Shift ist der Text für die Maus durchlässig (Klicks und Kameradrehen darunter gehen normal).
+    f:RegisterEvent("MODIFIER_STATE_CHANGED")
+    f:SetScript("OnEvent", function() self:UpdateMouse() end)
 
     -- Aktionsleisten können sich im Edit Mode verschieben.
     EventRegistry:RegisterCallback("EditMode.Exit", function() self:Anchor() end, self)
 end
 
-function InfoText:ApplySettings()
-    if not self.frame then return end
-    local db = XPForeverDB
-    local font = self.text:GetFont()
-    self.text:SetFont(font, db.infoFontSize, "OUTLINE")
-    self.text:SetShadowOffset(0, 0)
-
-    local movable = db.infoPosition == "free" and not db.infoLocked
+-- Maus nur bei gedrückter Shift-Taste annehmen; dann auch den Verschiebe-Rahmen zeigen.
+function InfoText:UpdateMouse()
+    local movable = IsShiftKeyDown() or self.isMoving
     self.frame:EnableMouse(movable)
     self.dragBackground:SetShown(movable)
+    if not movable and GameTooltip:GetOwner() == self.frame then
+        GameTooltip_Hide()
+    end
+end
+
+function InfoText:ApplySettings()
+    if not self.frame then return end
+    local font = self.text:GetFont()
+    self.text:SetFont(font, XPForeverDB.infoFontSize, "OUTLINE")
+    self.text:SetShadowOffset(0, 0)
+    self:UpdateMouse()
     self:Anchor()
 end
 

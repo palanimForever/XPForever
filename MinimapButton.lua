@@ -38,7 +38,7 @@ end
 
 local function OnClick(_, button)
     if button == "RightButton" then
-        ns.Options:SetValue("infoEnabled", not XPForeverDB.infoEnabled)
+        ns.ToggleInfoText()
     else
         ns.Options:Open()
     end
