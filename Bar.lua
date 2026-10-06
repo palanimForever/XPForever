@@ -114,22 +114,34 @@ end
 
 -- Die Blizzard-XP-Leiste unsichtbar machen. Ihr Container bleibt bestehen, damit die
 -- Aktionsleisten-Anordnung im Edit Mode nicht verrutscht und die Leiste dort verschiebbar bleibt.
+-- Blizzard-Frames dauerhaft unsichtbar halten: Das Spiel setzt ihre Transparenz zur Laufzeit wieder auf 1
+-- (per /xpf debug beobachtet, 2026-10-06; im Lua-Code nicht auffindbar). Deshalb jedes erneute Sichtbarmachen
+-- sofort zurücknehmen und es zusätzlich bei jedem Neuzeichnen sicherstellen.
+local silenced = setmetatable({}, { __mode = "k" })
+
+local function Silence(frame)
+    frame:SetAlpha(0)
+    frame:EnableMouse(false)
+    if not silenced[frame] then
+        silenced[frame] = true
+        hooksecurefunc(frame, "SetAlpha", function(self, alpha)
+            if alpha and alpha > 0 then self:SetAlpha(0) end
+        end)
+        frame:HookScript("OnShow", function(self) self:SetAlpha(0) end)
+    end
+end
+
+-- Die Blizzard-XP-Leiste samt Erholungs-Marker unsichtbar machen. Ihr Container bleibt bestehen, damit die
+-- Aktionsleisten-Anordnung im Edit Mode nicht verrutscht und die Leiste dort verschiebbar bleibt.
 local function HideBlizzardBar()
     if not (StatusTrackingBarManager and StatusTrackingBarInfo) then return end
     local index = StatusTrackingBarInfo.BarsEnum.Experience
     for _, container in ipairs(StatusTrackingBarManager.barContainers or {}) do
         local bar = container.bars and container.bars[index]
         if bar then
-            bar:SetAlpha(0)
-            bar:EnableMouse(false)
-            -- Blizzards Erholungs-Marker eigens ausblenden: Er bleibt sonst sichtbar und kennt keine Quest-XP.
-            -- Blizzard blendet ihn bei XP-Updates wieder ein, deshalb bei jedem Einblenden unsichtbar machen.
-            local tick = bar.ExhaustionTick
-            if tick then
-                tick:EnableMouse(false)
-                tick:SetAlpha(0)
-                tick:HookScript("OnShow", function(self) self:SetAlpha(0) end)
-            end
+            Silence(bar)
+            -- Der Marker kennt keine Quest-XP und stünde an der falschen Stelle.
+            if bar.ExhaustionTick then Silence(bar.ExhaustionTick) end
         end
     end
 end
@@ -652,6 +664,7 @@ function Bar:Refresh()
     end
     f:Show()
     self:UpdateFills()
+    HideBlizzardBar()
 
     local target = ComputeTarget()
     local display = self.display
