@@ -5,7 +5,8 @@ local state = ns.state
 -- Minimap-Button über LibDBIcon: rund, mit gedrückter Maustaste um die Minimap ziehbar, Position in
 -- XPForeverDB.minimap. Zusätzlich ein Eintrag in Blizzards Addon-Menü an der Minimap (Addon Compartment).
 
-local ICON = "Interface\\Icons\\INV_Misc_Book_09"
+-- TGA (128x128, 32 Bit) lädt WoW sicher; Quelle: design/icons/XPForeverIcon.png im Workspace.
+local ICON = "Interface\\AddOns\\" .. addonName .. "\\Media\\icon"
 
 local MinimapButton = {}
 ns.MinimapButton = MinimapButton

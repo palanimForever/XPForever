@@ -5,7 +5,7 @@
 ## Author: Palanim
 ## Category: Quests
 ## Category-deDE: Quests
-## IconTexture: Interface\Icons\INV_Misc_Book_09
+## IconTexture: Interface\AddOns\XPForever\Media\icon
 ## Version: 0.3.0-dev
 ## SavedVariables: XPForeverDB
 ## SavedVariablesPerCharacter: XPForeverCharDB
