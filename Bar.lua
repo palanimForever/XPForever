@@ -4,7 +4,8 @@ local state = ns.state
 
 local WHITE = "Interface\\Buttons\\WHITE8x8"
 local NUM_SEGMENTS = 20
-local BORDER = 1
+local BORDER = 2 -- Bronze-Rand in Pixeln
+local INNER_SHADOW = 1 -- dunkle Linie zwischen Rand und Füllung
 local TEXT_FADE_DURATION = 0.15
 local GLOW_SIZE = 6
 local GRADIENT_SHADE = 0.55 -- Helligkeit der Unterkante beim Farbverlauf
@@ -15,6 +16,9 @@ local FLASH_DURATION = 0.8
 -- Die Füllfarben kommen aus den Einstellungen (ns.GetColor).
 local COLORS = {
     border = CreateColor(0.62, 0.48, 0.27, 1),
+    borderLight = CreateColor(0.86, 0.70, 0.44, 1), -- Oberkante: wie geprägtes Metall
+    borderDark = CreateColor(0.36, 0.26, 0.14, 1), -- Unterkante
+    innerShadow = CreateColor(0, 0, 0, 0.8), -- trennt den Rand von jeder Füllfarbe
     background = CreateColor(0.04, 0.05, 0.09, 1),
     divider = CreateColor(0, 0, 0, 0.55),
     dividerHighlight = CreateColor(1, 1, 1, 0.12),
@@ -80,6 +84,25 @@ local function HideBlizzardBar()
     end
 end
 
+-- Vier Linien entlang der Innenseite von `frame` (thickness Pixel breit). Für Rahmen, die eine
+-- Füllung nicht verdecken dürfen.
+local function CreateEdges(parent, frame, thickness, color, layer, subLevel)
+    local edges = {
+        { "TOPLEFT", "TOPRIGHT", nil, thickness },
+        { "BOTTOMLEFT", "BOTTOMRIGHT", nil, thickness },
+        { "TOPLEFT", "BOTTOMLEFT", thickness, nil },
+        { "TOPRIGHT", "BOTTOMRIGHT", thickness, nil },
+    }
+    for _, edge in ipairs(edges) do
+        local line = parent:CreateTexture(nil, layer, nil, subLevel)
+        line:SetColorTexture(color:GetRGBA())
+        line:SetPoint(edge[1], frame, edge[1])
+        line:SetPoint(edge[2], frame, edge[2])
+        if edge[3] then line:SetWidth(edge[3]) end
+        if edge[4] then line:SetHeight(edge[4]) end
+    end
+end
+
 -- Goldenes Leuchten im Erholungsgebiet, angelehnt an das Leuchten des Spielerrahmens.
 -- Animiert wird nur das Alpha des Frames: Alpha-Animationen direkt auf Texturen mit
 -- SetGradient färbten diese weiß (siehe Wiki).
@@ -88,21 +111,8 @@ local function CreateRestGlow(f)
     restGlow:SetAllPoints()
     restGlow:Hide()
 
-    -- Goldene Rahmenkanten genau über dem Bronze-Rand (vier Linien, damit nichts die Füllung verdeckt).
-    local edges = {
-        { "TOPLEFT", "TOPRIGHT", nil, BORDER },
-        { "BOTTOMLEFT", "BOTTOMRIGHT", nil, BORDER },
-        { "TOPLEFT", "BOTTOMLEFT", BORDER, nil },
-        { "TOPRIGHT", "BOTTOMRIGHT", BORDER, nil },
-    }
-    for _, edge in ipairs(edges) do
-        local line = restGlow:CreateTexture(nil, "OVERLAY")
-        line:SetColorTexture(COLORS.restGlow:GetRGB())
-        line:SetPoint(edge[1], f, edge[1])
-        line:SetPoint(edge[2], f, edge[2])
-        if edge[3] then line:SetWidth(edge[3]) end
-        if edge[4] then line:SetHeight(edge[4]) end
-    end
+    -- Goldene Rahmenkanten genau über dem Bronze-Rand.
+    CreateEdges(restGlow, f, BORDER, COLORS.restGlow, "OVERLAY")
 
     local r, g, b = COLORS.restGlow:GetRGB()
     local glowTop = restGlow:CreateTexture(nil, "BACKGROUND")
@@ -165,6 +175,18 @@ function Bar:Init()
     border:SetAllPoints()
     border:SetColorTexture(COLORS.border:GetRGBA())
 
+    -- Metall-Effekt: hellere Oberkante, dunklere Unterkante des Bronze-Rands.
+    local borderTop = f:CreateTexture(nil, "BACKGROUND")
+    borderTop:SetColorTexture(COLORS.borderLight:GetRGBA())
+    borderTop:SetPoint("TOPLEFT")
+    borderTop:SetPoint("TOPRIGHT")
+    borderTop:SetHeight(1)
+    local borderBottom = f:CreateTexture(nil, "BACKGROUND")
+    borderBottom:SetColorTexture(COLORS.borderDark:GetRGBA())
+    borderBottom:SetPoint("BOTTOMLEFT")
+    borderBottom:SetPoint("BOTTOMRIGHT")
+    borderBottom:SetHeight(1)
+
     local inner = CreateFrame("Frame", nil, f)
     inner:SetPoint("TOPLEFT", BORDER, -BORDER)
     inner:SetPoint("BOTTOMRIGHT", -BORDER, BORDER)
@@ -224,6 +246,9 @@ function Bar:Init()
         divider.highlight:SetPoint("BOTTOMLEFT", divider, "BOTTOMRIGHT")
         self.dividers[i] = divider
     end
+
+    -- Dunkle Innenlinie über den Füllungen: Rand und Füllung bleiben bei jeder Farbe unterscheidbar.
+    CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")
 
     -- Eigener Frame für die Hover-Texte, damit sie gemeinsam ein- und ausgeblendet werden können.
     local texts = CreateFrame("Frame", nil, overlay)
