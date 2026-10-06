@@ -112,12 +112,13 @@ local function SetSpan(tex, from, to)
     tex:Show()
 end
 
--- Left and right end masks on `frame`, covering the ends of `target`.
+-- Left and right end masks on `frame`, covering the ends of `target`. The texture is set in
+-- Bar:UpdateRounding.
 local function CreateCapMasks(frame, target)
     local masks = {}
     for side, file in pairs(CAP_MASKS) do
         local mask = frame:CreateMaskTexture()
-        mask:SetTexture(file, "CLAMP", "CLAMP")
+        mask.file = file
         mask:SetPoint("TOP" .. side, target, "TOP" .. side)
         mask:SetPoint("BOTTOM" .. side, target, "BOTTOM" .. side)
         table.insert(masks, mask)
@@ -358,6 +359,11 @@ function Bar:Init()
         { inset = BORDER, masks = CreateCapMasks(flashFrame, inner), textures = { self.flashTexture } },
         { inset = BORDER, masks = CreateCapMasks(overlay, inner), textures = shadowLines },
     }
+    for _, group in ipairs(self.roundedGroups) do
+        for _, tex in ipairs(group.textures) do
+            for _, mask in ipairs(group.masks) do tex:AddMaskTexture(mask) end
+        end
+    end
 
     -- Separate frame for the hover texts so they can fade in and out together.
     local texts = CreateFrame("Frame", nil, overlay)
@@ -490,18 +496,14 @@ function Bar:ApplySettings()
 end
 
 -- Add or remove the end masks; their size follows the bar height.
+-- The masks stay on their textures; without rounding they get a plain white texture that cuts
+-- nothing. Removing and adding them again left the fills clipped to a thin strip.
 function Bar:UpdateRounding(rounded)
     for _, group in ipairs(self.roundedGroups) do
         local size = XPForeverDB.height - 2 * group.inset
-        for _, mask in ipairs(group.masks) do mask:SetWidth(size) end
-    end
-    if self.rounded == rounded then return end
-    self.rounded = rounded
-    for _, group in ipairs(self.roundedGroups) do
-        for _, tex in ipairs(group.textures) do
-            for _, mask in ipairs(group.masks) do
-                if rounded then tex:AddMaskTexture(mask) else tex:RemoveMaskTexture(mask) end
-            end
+        for _, mask in ipairs(group.masks) do
+            mask:SetTexture(rounded and mask.file or WHITE, "CLAMP", "CLAMP")
+            mask:SetWidth(size)
         end
     end
 end
