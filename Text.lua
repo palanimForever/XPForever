@@ -6,13 +6,30 @@ local state = ns.state
 
 local TEXT_SEPARATOR = "  |cff808080·|r  "
 
+-- Normalerweise formatiert WoW Zahlen nach der Client-Sprache. Ist zum Testen eine Sprache erzwungen
+-- (ns.FORCE_LOCALE), werden auch die Zahlen in deren Format geschrieben.
+local NUMBER_FORMATS = {
+    enUS = { thousands = ",", decimal = "." },
+    deDE = { thousands = ".", decimal = "," },
+}
+local forcedFormat = ns.FORCE_LOCALE and NUMBER_FORMATS[ns.FORCE_LOCALE]
+
 function ns.FormatNumber(value)
-    return BreakUpLargeNumbers(math.floor(value + 0.5))
+    local rounded = math.floor(value + 0.5)
+    if not forcedFormat then
+        return BreakUpLargeNumbers(rounded)
+    end
+    local text, replaced = tostring(rounded), 1
+    while replaced > 0 do
+        text, replaced = text:gsub("^(-?%d+)(%d%d%d)", "%1" .. forcedFormat.thousands .. "%2")
+    end
+    return text
 end
 
 -- DECIMAL_SEPERATOR (sic) ist Blizzards lokalisiertes Dezimaltrennzeichen, z. B. "," auf deDE.
 function ns.FormatPercent(value)
-    return (string.format("%.1f", value):gsub("%.", DECIMAL_SEPERATOR or "."))
+    local decimal = forcedFormat and forcedFormat.decimal or DECIMAL_SEPERATOR or "."
+    return (string.format("%.1f", value):gsub("%.", decimal))
 end
 
 function ns.FormatDuration(seconds)

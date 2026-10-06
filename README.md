@@ -66,14 +66,15 @@ While you rest in an inn or a city, the frame of the bar glows softly in gold an
 
 Everything is configurable in *Options → AddOns → XPForever*: height, segments, colors and opacity, what the bar text and the info text show, how XP per hour is calculated and more.
 
-<img src="docs/images/options.png" alt="XPForever settings" width="700">
+<p>
+<img src="docs/images/options.png" alt="XPForever settings" width="32%">
+<img src="docs/images/options-colors.png" alt="Color settings" width="32%">
+<img src="docs/images/options-info-text.png" alt="Info text settings" width="32%">
+</p>
 
 ### Minimap button
 
 Drag it around the minimap. Left-click opens the settings, right-click shows or hides the info text, and the tooltip gives you a quick summary. Don't like minimap buttons? Turn it off – XPForever is also listed in the addon menu at the minimap.
-
-<img src="docs/images/minimap.png" alt="Minimap button and tooltip" width="400">
-
 ## Usage
 
 | Action | Effect |

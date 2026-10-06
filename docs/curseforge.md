@@ -15,7 +15,7 @@ Diese Datei ist per .pkgmeta vom Spieler-Download ausgeschlossen.
 - **License:** MIT License
 - **Source:** https://github.com/palanimForever/XPForever
 - **Issues:** https://github.com/palanimForever/XPForever/issues
-- **Gallery images:** hero, bar-colors, bar-hover, info-text, resting, options, minimap (titles below)
+- **Gallery images:** see table at the end
 
 ---
 
@@ -99,4 +99,7 @@ Everything lives in **Options → AddOns → XPForever**: height, segments, colo
 | info-text.png | Info text | XP per hour, time to level and kills to level above your action bars |
 | resting.png | Resting | Golden glow and "Zzz" while you rest |
 | options.png | Settings | Everything configurable in Options → AddOns |
-| minimap.png | Minimap button | Quick summary and access to the settings |
+| options-colors.png | Colors | Choose colors and opacity for XP, quest XP and rested XP |
+| options-info-text.png | Info text settings | Pick exactly which values the info text shows |
+| bar-no-quest-xp.png | Without quest XP preview | Every preview can be turned off |
+| minimap.png *(noch aufnehmen)* | Minimap button | Quick summary and access to the settings |
