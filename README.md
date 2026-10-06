@@ -56,6 +56,12 @@ A single line above your action bars with the values you care about: XP per hour
 
 XPForever learns how much XP your recent kills gave you and estimates how many more you need. Quest turn-ins are recognized and left out, so the estimate stays honest.
 
+### Smooth animations
+
+The bar glides to its new state instead of jumping, and the XP you just gained lights up briefly. Turn in a quest and watch your XP grow into the quest XP preview.
+
+<img src="docs/images/animation.gif" alt="The bar animating when quest XP changes" width="900">
+
 ### Resting
 
 While you rest in an inn or a city, the frame of the bar glows softly in gold and a small “Zzz” appears – the same style as the player frame.

@@ -58,6 +58,12 @@ One line above your action bars with the values you care about. It follows your 
 
 XPForever learns from your recent kills and estimates how many more you need. Quest turn-ins are recognized and left out.
 
+## Smooth animations
+
+The bar glides to its new state instead of jumping, and the XP you just gained lights up briefly.
+
+![Animation](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/animation.gif)
+
 ## Resting
 
 While you rest in an inn or a city, the bar glows softly in gold and a small "Zzz" appears.
