@@ -1,5 +1,7 @@
 # XPForever Changelog
 
+## Unreleased
+
 ## 0.5.1-beta
 
 ### Changed
