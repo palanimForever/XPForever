@@ -20,6 +20,13 @@ local CLASSIC_ATLAS = {
 }
 local WHITE_COLOR = CreateColor(1, 1, 1)
 
+-- Square masks that round off the ends of the Modern bar. Sized to the bar height, so the corners
+-- stay round at any height; CLAMP repeats their straight inner edge along the rest of the bar.
+local CAP_MASKS = {
+    LEFT = "Interface\\AddOns\\" .. addonName .. "\\Media\\bar-cap-left",
+    RIGHT = "Interface\\AddOns\\" .. addonName .. "\\Media\\bar-cap-right",
+}
+
 -- Dark background and bronze border like the Forever action bars.
 -- The fill colors come from the settings (ns.GetColor).
 local COLORS = {
@@ -105,6 +112,19 @@ local function SetSpan(tex, from, to)
     tex:Show()
 end
 
+-- Left and right end masks on `frame`, covering the ends of `target`.
+local function CreateCapMasks(frame, target)
+    local masks = {}
+    for side, file in pairs(CAP_MASKS) do
+        local mask = frame:CreateMaskTexture()
+        mask:SetTexture(file, "CLAMP", "CLAMP")
+        mask:SetPoint("TOP" .. side, target, "TOP" .. side)
+        mask:SetPoint("BOTTOM" .. side, target, "BOTTOM" .. side)
+        table.insert(masks, mask)
+    end
+    return masks
+end
+
 local function CreateText(parent, justify, fontObject)
     local text = parent:CreateFontString(nil, "OVERLAY", fontObject or "GameFontHighlightSmall")
     text:SetJustifyH(justify)
@@ -175,8 +195,12 @@ local function CreateRestGlow(f)
     restGlow:SetAllPoints()
     restGlow:Hide()
 
-    -- Modern: golden border edges over the bronze border plus a soft glow above and below.
-    restGlow.modernPieces = CreateEdges(restGlow, restGlow, BORDER, COLORS.restGlow, "OVERLAY")
+    -- Modern: the bronze border turns golden (the ring lies below the bar's inner area, so only the
+    -- border shows) plus a soft glow above and below.
+    restGlow.ring = restGlow:CreateTexture(nil, "OVERLAY")
+    restGlow.ring:SetAllPoints()
+    restGlow.ring:SetColorTexture(COLORS.restGlow:GetRGBA())
+    restGlow.modernPieces = { restGlow.ring }
     -- Classic: Blizzard's frame art laid over it in gold with additive blending (exactly the same shape).
     restGlow.classicFrame = restGlow:CreateTexture(nil, "OVERLAY")
     restGlow.classicFrame:SetBlendMode("ADD")
@@ -258,7 +282,9 @@ function Bar:Init()
     -- Parts only the Modern style shows (in Classic, Blizzard's frame takes over).
     self.modernParts = { border, borderTop, borderBottom }
 
+    -- Above the rested glow ring (f + 1), so the ring only shows around it.
     local inner = CreateFrame("Frame", nil, f)
+    inner:SetFrameLevel(f:GetFrameLevel() + 2)
     self.inner = inner
 
     local background = inner:CreateTexture(nil, "BACKGROUND")
@@ -317,10 +343,21 @@ function Bar:Init()
     end
 
     -- Dark inner line over the fills: border and fill stay distinguishable with any color.
-    for _, line in ipairs(CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")) do
+    local shadowLines = CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")
+    for _, line in ipairs(shadowLines) do
         table.insert(self.modernParts, line)
     end
     self.overlay = overlay
+
+    -- Rounded ends (Modern only): masks per frame, the inner ones smaller by the border width.
+    self.roundedGroups = {
+        { inset = 0, masks = CreateCapMasks(f, f), textures = { border, borderTop, borderBottom } },
+        { inset = 0, masks = CreateCapMasks(self.restGlow, f), textures = { self.restGlow.ring } },
+        { inset = BORDER, masks = CreateCapMasks(inner, inner),
+            textures = { background, self.xpFill, self.questFill, self.restedFill, self.spark } },
+        { inset = BORDER, masks = CreateCapMasks(flashFrame, inner), textures = { self.flashTexture } },
+        { inset = BORDER, masks = CreateCapMasks(overlay, inner), textures = shadowLines },
+    }
 
     -- Separate frame for the hover texts so they can fade in and out together.
     local texts = CreateFrame("Frame", nil, overlay)
@@ -445,10 +482,28 @@ function Bar:ApplySettings()
     end
     self.percentText:SetShown(db.showPercent)
     self.restIcon:SetScale(classic and 0.8 or 1)
+    self:UpdateRounding(not classic)
 
     self:Anchor()
     self:UpdateTextVisibility(true)
     self:UpdateResting()
+end
+
+-- Add or remove the end masks; their size follows the bar height.
+function Bar:UpdateRounding(rounded)
+    for _, group in ipairs(self.roundedGroups) do
+        local size = XPForeverDB.height - 2 * group.inset
+        for _, mask in ipairs(group.masks) do mask:SetWidth(size) end
+    end
+    if self.rounded == rounded then return end
+    self.rounded = rounded
+    for _, group in ipairs(self.roundedGroups) do
+        for _, tex in ipairs(group.textures) do
+            for _, mask in ipairs(group.masks) do
+                if rounded then tex:AddMaskTexture(mask) else tex:RemoveMaskTexture(mask) end
+            end
+        end
+    end
 end
 
 -- The container in which Blizzard currently shows (or is about to show) the experience bar.
