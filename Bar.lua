@@ -20,12 +20,11 @@ local CLASSIC_ATLAS = {
 }
 local WHITE_COLOR = CreateColor(1, 1, 1)
 
--- Square masks that round off the ends of the Modern bar. Sized to the bar height, so the corners
--- stay round at any height; CLAMP repeats their straight inner edge along the rest of the bar.
-local CAP_MASKS = {
-    LEFT = "Interface\\AddOns\\" .. addonName .. "\\Media\\bar-cap-left",
-    RIGHT = "Interface\\AddOns\\" .. addonName .. "\\Media\\bar-cap-right",
-}
+-- Mask that rounds off the ends of the Modern bar: a long texture (MASK_ASPECT : 1) with rounded ends.
+-- Each end gets its own mask over the whole bar, cropped so the rounding keeps its shape at any bar
+-- size. Masks must cover everything they clip: WoW does not extend a mask's edge beyond its bounds.
+local BAR_MASK = "Interface\\AddOns\\" .. addonName .. "\\Media\\bar-mask"
+local MASK_ASPECT = 128
 
 -- Dark background and bronze border like the Forever action bars.
 -- The fill colors come from the settings (ns.GetColor).
@@ -112,15 +111,13 @@ local function SetSpan(tex, from, to)
     tex:Show()
 end
 
--- Left and right end masks on `frame`, covering the ends of `target`. The texture is set in
--- Bar:UpdateRounding.
+-- Left and right end masks on `frame`, covering `target`. Bar:UpdateRounding sets their texture.
 local function CreateCapMasks(frame, target)
     local masks = {}
-    for side, file in pairs(CAP_MASKS) do
+    for _, side in ipairs({ "LEFT", "RIGHT" }) do
         local mask = frame:CreateMaskTexture()
-        mask.file = file
-        mask:SetPoint("TOP" .. side, target, "TOP" .. side)
-        mask:SetPoint("BOTTOM" .. side, target, "BOTTOM" .. side)
+        mask:SetAllPoints(target)
+        mask.side = side
         table.insert(masks, mask)
     end
     return masks
@@ -488,22 +485,34 @@ function Bar:ApplySettings()
     end
     self.percentText:SetShown(db.showPercent)
     self.restIcon:SetScale(classic and 0.8 or 1)
-    self:UpdateRounding(not classic)
 
     self:Anchor()
+    self:UpdateRounding()
     self:UpdateTextVisibility(true)
     self:UpdateResting()
 end
 
--- Add or remove the end masks; their size follows the bar height.
--- The masks stay on their textures; without rounding they get a plain white texture that cuts
--- nothing. Removing and adding them again left the fills clipped to a thin strip.
-function Bar:UpdateRounding(rounded)
+-- Rounded ends in Modern. The masks stay on their textures; without rounding they get a plain white
+-- texture that cuts nothing. Depends on the bar size, so Bar:Layout calls it as well.
+function Bar:UpdateRounding()
+    local rounded = not IsClassic()
+    local width, height = self.frame:GetSize()
     for _, group in ipairs(self.roundedGroups) do
-        local size = XPForeverDB.height - 2 * group.inset
+        local w, h = width - 2 * group.inset, height - 2 * group.inset
+        -- Share of the mask texture that keeps the ends round (all of it on very thin bars).
+        local span = (w > 0 and h > 0) and math.min(w / (h * MASK_ASPECT), 1) or 1
         for _, mask in ipairs(group.masks) do
-            mask:SetTexture(rounded and mask.file or WHITE, "CLAMP", "CLAMP")
-            mask:SetWidth(size)
+            if rounded then
+                mask:SetTexture(BAR_MASK, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+                if mask.side == "LEFT" then
+                    mask:SetTexCoord(0, span, 0, 1)
+                else
+                    mask:SetTexCoord(1 - span, 1, 0, 1)
+                end
+            else
+                mask:SetTexture(WHITE)
+                mask:SetTexCoord(0, 1, 0, 1)
+            end
         end
     end
 end
@@ -615,6 +624,7 @@ function Bar:UpdateResting()
 end
 
 function Bar:Layout(width)
+    self:UpdateRounding()
     local segmentWidth = width / NUM_SEGMENTS
     for i, divider in ipairs(self.dividers) do
         divider:ClearAllPoints()
