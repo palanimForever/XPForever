@@ -31,9 +31,9 @@ local function ShowTooltip(tooltip)
     end
 
     tooltip:AddLine(" ")
-    tooltip:AddLine(L.hintMinimapLeft, GRAY_FONT_COLOR:GetRGB())
-    tooltip:AddLine(L.hintMinimapRight, GRAY_FONT_COLOR:GetRGB())
-    tooltip:AddLine(L.hintMinimapDrag, GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("LeftButton", nil, L.actionOptions, L.hintMinimapLeft), GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("RightButton", nil, L.actionToggleInfo, L.hintMinimapRight), GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("LeftButton", nil, L.actionDragMinimap, L.hintMinimapDrag), GRAY_FONT_COLOR:GetRGB())
 end
 
 local function OnClick(_, button)

@@ -40,6 +40,29 @@ function ns.FormatDuration(seconds)
     return string.format("%dm", minutes)
 end
 
+-- Maus-Symbole aus Blizzards Einsteiger-Tutorial für Bedienhinweise in Tooltips.
+local MOUSE_ATLAS = {
+    LeftButton = "newplayertutorial-icon-mouse-leftbutton",
+    RightButton = "newplayertutorial-icon-mouse-rightbutton",
+}
+local HINT_ICON_HEIGHT = 16
+
+local function ModifierName(modifier)
+    if modifier == "CTRL" then return CTRL_KEY_TEXT or "Ctrl" end
+    if modifier == "SHIFT" then return SHIFT_KEY_TEXT or "Shift" end
+end
+
+-- Bedienhinweis wie "Strg + [Maus]  Sitzung zurücksetzen". Fehlt das Maus-Symbol im Client,
+-- wird der reine Text (fallback) zurückgegeben.
+function ns.ClickHint(button, modifier, action, fallback)
+    local atlas = MOUSE_ATLAS[button]
+    local info = atlas and C_Texture.GetAtlasInfo(atlas)
+    if not info then return fallback end
+    local width = math.floor(HINT_ICON_HEIGHT * info.width / info.height + 0.5)
+    local prefix = modifier and (ModifierName(modifier) .. " + ") or ""
+    return prefix .. CreateAtlasMarkup(atlas, width, HINT_ICON_HEIGHT) .. "  " .. action
+end
+
 -- Farben stehen als Hex-String ("ffRRGGBB") in den Einstellungen.
 function ns.GetColor(key)
     return CreateColorFromHexString(XPForeverDB[key])

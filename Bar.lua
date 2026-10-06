@@ -572,9 +572,10 @@ function Bar:ShowTooltip()
     end
 
     tooltip:AddLine(" ")
-    tooltip:AddLine(L.hintToggleInfo, GRAY_FONT_COLOR:GetRGB())
-    tooltip:AddLine(L.hintResetSession, GRAY_FONT_COLOR:GetRGB())
-    tooltip:AddLine(L.hintOptions, GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("LeftButton", nil, L.actionToggleInfo, L.hintToggleInfo), GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("LeftButton", "CTRL", L.actionResetSession, L.hintResetSession),
+        GRAY_FONT_COLOR:GetRGB())
+    tooltip:AddLine(ns.ClickHint("RightButton", nil, L.actionOptions, L.hintOptions), GRAY_FONT_COLOR:GetRGB())
     tooltip:AddLine(" ")
     tooltip:AddLine(ns.BrandLine(), GRAY_FONT_COLOR:GetRGB())
     tooltip:Show()

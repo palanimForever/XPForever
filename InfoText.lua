@@ -67,8 +67,10 @@ function InfoText:Init()
     f:SetScript("OnEnter", function()
         GameTooltip:SetOwner(f, "ANCHOR_TOP")
         GameTooltip:SetText(ns.BrandLine())
-        GameTooltip:AddLine(L.infoDragHint, GRAY_FONT_COLOR:GetRGB())
-        GameTooltip:AddLine(L.infoResetHint, GRAY_FONT_COLOR:GetRGB())
+        GameTooltip:AddLine(ns.ClickHint("LeftButton", "SHIFT", L.actionDragMove, L.infoDragHint),
+            GRAY_FONT_COLOR:GetRGB())
+        GameTooltip:AddLine(ns.ClickHint("RightButton", "SHIFT", L.actionResetPosition, L.infoResetHint),
+            GRAY_FONT_COLOR:GetRGB())
         GameTooltip:Show()
     end)
     f:SetScript("OnLeave", GameTooltip_Hide)
