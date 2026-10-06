@@ -13,7 +13,7 @@ local TICK_INTERVAL = 5 -- seconds; for time-based values like XP/h and time to 
 ns.defaults = {
     -- Bar
     barStyle = "modern", -- "modern" | "classic"
-    height = 22,
+    height = 16,
     showSegments = true,
     showPercent = true,
     animate = true,

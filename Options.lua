@@ -240,7 +240,7 @@ end
 -- Small chooser at the top center: Modern / Classic side by side. A click switches the bar live, so the
 -- result is visible right away. Deliberately not added to UISpecialFrames (Escape): adding frames there
 -- can taint Blizzard's window handling.
-local PROMPT_WIDTH, PROMPT_HEIGHT = 300, 150
+local PROMPT_WIDTH, PROMPT_HEIGHT = 360, 150
 local PROMPT_BUTTON_WIDTH, PROMPT_BUTTON_HEIGHT = 120, 30
 
 function Options:UpdateStylePrompt()
@@ -288,9 +288,11 @@ function Options:ShowStylePrompt()
             prompt.buttons[entry[1]] = button
         end
 
-        local hint = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+        -- One line on how to get to the settings, with the same mouse icon as in the tooltips.
+        local hint = content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
         hint:SetPoint("TOP", 0, -92)
-        hint:SetText(L.stylePromptHint)
+        hint:SetWordWrap(false)
+        hint:SetText(ns.ClickHint("RightButton", nil, L.stylePromptHint, L.stylePromptHint))
 
         local ok = CreateFrame("Button", nil, prompt, "UIPanelButtonTemplate")
         ok:SetSize(100, 24)

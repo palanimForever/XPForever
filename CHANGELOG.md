@@ -1,6 +1,10 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.5.1-beta
+
+### Changed
+- The Modern bar is now 16 pixels high by default. Your current height stays as it is.
+- The style window shows how to open the settings.
 
 ## 0.5.0-beta
 
