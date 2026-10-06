@@ -17,6 +17,18 @@ StaticPopupDialogs["XPFOREVER_RESET_SETTINGS"] = {
     timeout = 0,
 }
 
+-- Einmalige Stilwahl beim ersten Start (auch für Spieler, die von einer älteren Version kommen).
+StaticPopupDialogs["XPFOREVER_CHOOSE_STYLE"] = {
+    text = L.stylePrompt,
+    button1 = L.optStyleModern,
+    button2 = L.optStyleClassic,
+    OnButton1 = function() Options:SetValue("barStyle", "modern") end,
+    OnButton2 = function() Options:SetValue("barStyle", "classic") end,
+    hideOnEscape = true,
+    whileDead = true,
+    timeout = 0,
+}
+
 local function Header(category, text)
     local layout = SettingsPanel:GetLayout(category)
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text))
@@ -83,8 +95,14 @@ end
 
 local function RegisterBarPage(category)
     Header(category, L.optSectionLook)
-    Slider(category, "height", L.optHeight, L.optHeightTip, 12, 32, 1)
-    Checkbox(category, "showSegments", L.optSegments, L.optSegmentsTip)
+    local style = Dropdown(category, "barStyle", L.optStyle, L.optStyleTip, {
+        { "modern", L.optStyleModern },
+        { "classic", L.optStyleClassic },
+    })
+    -- Höhe und eigene Segmente gibt es nur im modernen Stil (Classic übernimmt Blizzards Maße).
+    local function IsModern() return XPForeverDB.barStyle ~= "classic" end
+    DependsOn(Slider(category, "height", L.optHeight, L.optHeightTip, 12, 32, 1), style, IsModern)
+    DependsOn(Checkbox(category, "showSegments", L.optSegments, L.optSegmentsTip), style, IsModern)
     Checkbox(category, "showPercent", L.optPercent, L.optPercentTip)
     Checkbox(category, "animate", L.optAnimate, L.optAnimateTip)
 
@@ -212,6 +230,23 @@ function Options:Open()
         return
     end
     Settings.OpenToCategory(self.category:GetID())
+end
+
+-- Stil-Auswahl nur ein einziges Mal anbieten. Im Kampf warten, bis er vorbei ist.
+local STYLE_PROMPT_DELAY = 3
+local STYLE_PROMPT_RETRY = 5
+
+function Options:ShowStylePromptOnce()
+    if XPForeverDB.stylePromptSeen then return end
+    C_Timer.After(STYLE_PROMPT_DELAY, function()
+        if XPForeverDB.stylePromptSeen then return end
+        if InCombatLockdown() then
+            C_Timer.After(STYLE_PROMPT_RETRY, function() self:ShowStylePromptOnce() end)
+            return
+        end
+        XPForeverDB.stylePromptSeen = true
+        StaticPopup_Show("XPFOREVER_CHOOSE_STYLE")
+    end)
 end
 
 -- Einstellung von außen ändern (z. B. per Minimap-Klick), damit das Optionsfenster mitzieht.

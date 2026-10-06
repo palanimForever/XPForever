@@ -12,6 +12,15 @@ local GRADIENT_SHADE = 0.55 -- Helligkeit der Unterkante beim Farbverlauf
 local ANIM_DURATION = 0.4
 local FLASH_DURATION = 0.8
 
+-- Blizzards Original-Texturen der XP-Leiste (siehe wiki/ui-style.md), für den Classic-Stil.
+local CLASSIC_ATLAS = {
+    background = "UI-HUD-ExperienceBar-Background",
+    fillXP = "UI-HUD-ExperienceBar-Fill-Experience",
+    fillRested = "UI-HUD-ExperienceBar-Fill-Rested",
+    prediction = "UI-HUD-ExperienceBar-Fill-Prediction",
+}
+local WHITE_COLOR = CreateColor(1, 1, 1)
+
 -- Dunkler Hintergrund und Bronze-Rand wie die Forever-Aktionsleisten.
 -- Die Füllfarben kommen aus den Einstellungen (ns.GetColor).
 local COLORS = {
@@ -46,7 +55,32 @@ local function CreateFill(parent, subLevel)
     return tex
 end
 
--- Spannt eine Textur über den Bereich [from, to] (Anteile 0..1) der Leiste.
+-- Moderner Stil: einfarbige Füllung (mit optionalem Farbverlauf).
+local function UseColorFill(tex, color, alpha)
+    tex.atlas = nil
+    tex:SetTexture(WHITE)
+    tex:SetTexCoord(0, 1, 0, 1)
+    tex:SetDesaturated(false)
+    SetFillColor(tex, color, alpha)
+end
+
+-- Classic-Stil: Blizzards Original-Textur. SetSpan schneidet sie später zu, statt sie zu stauchen.
+-- Fehlt der Atlas im Client, bleibt es bei der einfarbigen Füllung.
+local function UseAtlasFill(tex, atlas, color, alpha, desaturate)
+    local info = C_Texture.GetAtlasInfo(atlas)
+    if not info then
+        UseColorFill(tex, color, alpha)
+        return
+    end
+    tex:SetAtlas(atlas)
+    tex.atlas = info
+    tex:SetDesaturated(desaturate or false)
+    local r, g, b = color:GetRGB()
+    tex:SetVertexColor(r, g, b, alpha)
+end
+
+-- Spannt eine Textur über den Bereich [from, to] (Anteile 0..1) der Leiste. Atlas-Texturen werden
+-- wie bei Blizzards StatusBar passend beschnitten, damit sie bei jedem Füllstand unverzerrt bleiben.
 local function SetSpan(tex, from, to)
     local width = Bar.inner:GetWidth()
     from = math.max(0, math.min(from, 1))
@@ -59,6 +93,12 @@ local function SetSpan(tex, from, to)
     tex:SetPoint("TOPLEFT", Bar.inner, "TOPLEFT", from * width, 0)
     tex:SetPoint("BOTTOMLEFT", Bar.inner, "BOTTOMLEFT", from * width, 0)
     tex:SetWidth(math.max((to - from) * width, 1))
+    local atlas = tex.atlas
+    if atlas then
+        local left, right = atlas.leftTexCoord, atlas.rightTexCoord
+        tex:SetTexCoord(left + (right - left) * from, left + (right - left) * to,
+            atlas.topTexCoord, atlas.bottomTexCoord)
+    end
     tex:Show()
 end
 
@@ -93,6 +133,7 @@ local function CreateEdges(parent, frame, thickness, color, layer, subLevel)
         { "TOPLEFT", "BOTTOMLEFT", thickness, nil },
         { "TOPRIGHT", "BOTTOMRIGHT", thickness, nil },
     }
+    local lines = {}
     for _, edge in ipairs(edges) do
         local line = parent:CreateTexture(nil, layer, nil, subLevel)
         line:SetColorTexture(color:GetRGBA())
@@ -100,7 +141,9 @@ local function CreateEdges(parent, frame, thickness, color, layer, subLevel)
         line:SetPoint(edge[2], frame, edge[2])
         if edge[3] then line:SetWidth(edge[3]) end
         if edge[4] then line:SetHeight(edge[4]) end
+        table.insert(lines, line)
     end
+    return lines
 end
 
 -- Goldenes Leuchten im Erholungsgebiet, angelehnt an das Leuchten des Spielerrahmens.
@@ -186,15 +229,15 @@ function Bar:Init()
     borderBottom:SetPoint("BOTTOMLEFT")
     borderBottom:SetPoint("BOTTOMRIGHT")
     borderBottom:SetHeight(1)
+    -- Teile, die nur der moderne Stil zeigt (im Classic-Stil übernimmt Blizzards Rahmen).
+    self.modernParts = { border, borderTop, borderBottom }
 
     local inner = CreateFrame("Frame", nil, f)
-    inner:SetPoint("TOPLEFT", BORDER, -BORDER)
-    inner:SetPoint("BOTTOMRIGHT", -BORDER, BORDER)
     self.inner = inner
 
     local background = inner:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints()
-    background:SetColorTexture(COLORS.background:GetRGBA())
+    self.background = background
 
     self.xpFill = CreateFill(inner, 2)
     self.questFill = CreateFill(inner, 1)
@@ -248,7 +291,10 @@ function Bar:Init()
     end
 
     -- Dunkle Innenlinie über den Füllungen: Rand und Füllung bleiben bei jeder Farbe unterscheidbar.
-    CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")
+    for _, line in ipairs(CreateEdges(overlay, inner, INNER_SHADOW, COLORS.innerShadow, "BORDER")) do
+        table.insert(self.modernParts, line)
+    end
+    self.overlay = overlay
 
     -- Eigener Frame für die Hover-Texte, damit sie gemeinsam ein- und ausgeblendet werden können.
     local texts = CreateFrame("Frame", nil, overlay)
@@ -268,6 +314,7 @@ function Bar:Init()
     self.percentText:SetShadowOffset(0, 0)
     local font, size = self.percentText:GetFont()
     self.percentText:SetFont(font, size, "OUTLINE")
+    self.percentFont = { font, size }
 
     -- Das Zzz teilt sich den Platz mit dem rechten Text und blendet gegenläufig.
     self.restIcon, self.restIconAnim = CreateRestIcon(overlay)
@@ -308,19 +355,69 @@ function Bar:Init()
 end
 
 -- Einstellungen anwenden, die nicht bei jedem XP-Update neu gesetzt werden müssen.
+local function IsClassic()
+    return XPForeverDB.barStyle == "classic"
+end
+
+-- Füllungen je nach Stil: modern einfarbig, classic mit Blizzards Texturen. Im Classic-Stil wechselt die
+-- XP-Füllung wie im Original zwischen Lila und Blau, sobald Erholung vorhanden ist.
+function Bar:UpdateFills()
+    local db = XPForeverDB
+    local questColor, questAlpha = ns.GetColor("colorQuest"), db.questOpacity / 100
+    if not IsClassic() then
+        self.fillStyle = nil
+        UseColorFill(self.xpFill, ns.GetColor("colorXP"), 1)
+        UseColorFill(self.questFill, questColor, questAlpha)
+        UseColorFill(self.restedFill, ns.GetColor("colorRested"), db.restedOpacity / 100)
+        return
+    end
+    local xpAtlas = state.rested > 0 and CLASSIC_ATLAS.fillRested or CLASSIC_ATLAS.fillXP
+    local style = xpAtlas .. questColor:GenerateHexColor() .. questAlpha
+    if self.fillStyle == style then return end
+    self.fillStyle = style
+    UseAtlasFill(self.xpFill, xpAtlas, WHITE_COLOR, 1)
+    -- Quest-XP gibt es im Original nicht: entsättigte XP-Textur, in der Quest-Farbe eingefärbt.
+    UseAtlasFill(self.questFill, CLASSIC_ATLAS.fillXP, questColor, questAlpha, true)
+    UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
+end
+
 function Bar:ApplySettings()
     if not self.frame then return end
     local db = XPForeverDB
+    local classic = IsClassic()
 
-    SetFillColor(self.xpFill, ns.GetColor("colorXP"), 1)
-    SetFillColor(self.questFill, ns.GetColor("colorQuest"), db.questOpacity / 100)
-    SetFillColor(self.restedFill, ns.GetColor("colorRested"), db.restedOpacity / 100)
+    -- Rahmen: modern eigener Bronze-Rand, classic Blizzards Rahmen und Trenner (der Container bleibt sichtbar).
+    for _, part in ipairs(self.modernParts) do part:SetShown(not classic) end
+    local inset = classic and 0 or BORDER
+    self.inner:ClearAllPoints()
+    self.inner:SetPoint("TOPLEFT", inset, -inset)
+    self.inner:SetPoint("BOTTOMRIGHT", -inset, inset)
+    if classic and C_Texture.GetAtlasInfo(CLASSIC_ATLAS.background) then
+        self.background:SetAtlas(CLASSIC_ATLAS.background)
+    else
+        self.background:SetColorTexture(COLORS.background:GetRGBA())
+    end
+
+    self.fillStyle = nil
+    self:UpdateFills()
 
     for _, divider in ipairs(self.dividers) do
-        divider:SetShown(db.showSegments)
-        divider.highlight:SetShown(db.showSegments)
+        divider:SetShown(db.showSegments and not classic)
+        divider.highlight:SetShown(db.showSegments and not classic)
+    end
+
+    -- Prozentzahl: modern Gold mit Kontur, classic wie Blizzards Leistentext.
+    if classic then
+        self.percentText:SetFontObject("TextStatusBarText")
+        self.percentText:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB())
+        self.percentText:SetShadowOffset(1, -1)
+    else
+        self.percentText:SetFont(self.percentFont[1], self.percentFont[2], "OUTLINE")
+        self.percentText:SetTextColor(NORMAL_FONT_COLOR:GetRGB())
+        self.percentText:SetShadowOffset(0, 0)
     end
     self.percentText:SetShown(db.showPercent)
+    self.restIcon:SetScale(classic and 0.8 or 1)
 
     self:Anchor()
     self:UpdateTextVisibility(true)
@@ -341,20 +438,32 @@ local function FindXPContainer()
     return MainStatusTrackingBarContainer
 end
 
--- Mittig auf den Blizzard-Container der XP-Leiste setzen: Im Edit Mode verschiebt man so auch unsere Leiste.
+-- Modern: mittig auf den Blizzard-Container der XP-Leiste (eigene Höhe), über dessen Rahmen.
+-- Classic: exakt auf Blizzards (unsichtbare) XP-Leiste, unter dessen Rahmen und Trennern.
+-- In beiden Fällen verschiebt der Edit Mode unsere Leiste mit.
 function Bar:Anchor()
     local f = self.frame
     local container = FindXPContainer()
+    local blizzardBar = container and container.bars and StatusTrackingBarInfo
+        and container.bars[StatusTrackingBarInfo.BarsEnum.Experience]
     f:ClearAllPoints()
-    if container then
+    if IsClassic() and blizzardBar then
+        f:SetAllPoints(blizzardBar)
+        f:SetFrameStrata("LOW")
+        f:SetFrameLevel(blizzardBar:GetFrameLevel() + 1)
+    elseif container then
         f:SetPoint("CENTER", container, "CENTER")
         f:SetWidth(container:GetWidth())
+        f:SetHeight(XPForeverDB.height)
+        f:SetFrameStrata("MEDIUM")
         f:SetFrameLevel(container:GetFrameLevel() + 20)
     else
         f:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 90)
-        f:SetWidth(1192)
+        f:SetSize(1192, XPForeverDB.height)
     end
-    f:SetHeight(XPForeverDB.height)
+    -- Texte immer über allem, auch über Blizzards Rahmen im Classic-Stil.
+    self.overlay:SetFrameStrata("MEDIUM")
+    self.overlay:SetFrameLevel((container and container:GetFrameLevel() or f:GetFrameLevel()) + 25)
 
     -- Der Info-Text richtet sich nach der obersten Leiste und muss mitwandern.
     if ns.InfoText.frame then ns.InfoText:Anchor() end
@@ -390,11 +499,13 @@ end
 function Bar:UpdateResting()
     if not self.frame then return end
     local show = IsResting() and XPForeverDB.showRestIndicator
+    -- Das goldene Leuchten gehört zum modernen Rahmen; im Classic-Stil bleibt nur das Zzz.
+    local glow = show and not IsClassic()
     self.restIcon:SetShown(show)
-    self.restGlow:SetShown(show)
+    self.restGlow:SetShown(glow)
     if show then
         self.restIconAnim:Play()
-        self.restGlowAnim:Play()
+        if glow then self.restGlowAnim:Play() else self.restGlowAnim:Stop() end
     else
         self.restIconAnim:Stop()
         self.restGlowAnim:Stop()
@@ -443,7 +554,8 @@ function Bar:Draw(display)
     self.spark:ClearAllPoints()
     self.spark:SetPoint("TOP", self.inner, "TOPLEFT", x, 0)
     self.spark:SetPoint("BOTTOM", self.inner, "BOTTOMLEFT", x, 0)
-    self.spark:SetShown(display.xp > 0 and display.xp < 1)
+    -- Blizzards Leiste hat keine Leuchtkante; im Classic-Stil weglassen.
+    self.spark:SetShown(display.xp > 0 and display.xp < 1 and not IsClassic())
 end
 
 -- Neu gewonnener Abschnitt leuchtet kurz in einer aufgehellten XP-Farbe auf.
@@ -504,6 +616,7 @@ function Bar:Refresh()
         return
     end
     f:Show()
+    self:UpdateFills() -- Classic: XP-Textur wechselt mit der Erholung (Lila ↔ Blau)
 
     local target = ComputeTarget()
     local display = self.display

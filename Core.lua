@@ -12,6 +12,7 @@ local TICK_INTERVAL = 5 -- Sekunden; für zeitabhängige Werte wie XP/h und Zeit
 -- Account-weite Einstellungen. Farben als Hex-Strings ("ffRRGGBB"), wie sie der Farbwähler der Settings liefert.
 ns.defaults = {
     -- Leiste
+    barStyle = "modern", -- "modern" | "classic"
     height = 22,
     showSegments = true,
     showPercent = true,
@@ -177,6 +178,7 @@ function handlers.PLAYER_ENTERING_WORLD(isInitialLogin)
         ns.Bar:Init()
         ns.InfoText:Init()
         C_Timer.NewTicker(TICK_INTERVAL, Tick)
+        ns.Options:ShowStylePromptOnce()
     end
     ns.ApplySettings()
 end

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New
+- Classic style: an experience bar that looks like Blizzard's own, with all XPForever features. Switch between Modern and Classic in the settings.
+- On first start, XPForever asks which style you prefer. Players updating from an earlier version see this choice once, too.
+
 ## 0.4.1-beta
 
 ### Changed
