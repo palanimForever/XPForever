@@ -123,9 +123,12 @@ local function HideBlizzardBar()
             bar:SetAlpha(0)
             bar:EnableMouse(false)
             -- Blizzards Erholungs-Marker eigens ausblenden: Er bleibt sonst sichtbar und kennt keine Quest-XP.
-            if bar.ExhaustionTick then
-                bar.ExhaustionTick:EnableMouse(false)
-                bar.ExhaustionTick:SetAlpha(0)
+            -- Blizzard blendet ihn bei XP-Updates wieder ein, deshalb bei jedem Einblenden unsichtbar machen.
+            local tick = bar.ExhaustionTick
+            if tick then
+                tick:EnableMouse(false)
+                tick:SetAlpha(0)
+                tick:HookScript("OnShow", function(self) self:SetAlpha(0) end)
             end
         end
     end
@@ -162,8 +165,11 @@ local function CreateRestGlow(f)
     restGlow:SetAllPoints()
     restGlow:Hide()
 
-    -- Goldene Rahmenkanten genau über dem Rand.
-    CreateEdges(restGlow, restGlow, BORDER, COLORS.restGlow, "OVERLAY")
+    -- Modern: goldene Rahmenkanten über dem Bronze-Rand plus weicher Schein oben und unten.
+    restGlow.modernPieces = CreateEdges(restGlow, restGlow, BORDER, COLORS.restGlow, "OVERLAY")
+    -- Classic: Blizzards Rahmengrafik golden und additiv darübergelegt (exakt dieselbe Form).
+    restGlow.classicFrame = restGlow:CreateTexture(nil, "OVERLAY")
+    restGlow.classicFrame:SetBlendMode("ADD")
 
     local r, g, b = COLORS.restGlow:GetRGB()
     local glowTop = restGlow:CreateTexture(nil, "BACKGROUND")
@@ -179,6 +185,8 @@ local function CreateRestGlow(f)
     glowBottom:SetPoint("TOPRIGHT", restGlow, "BOTTOMRIGHT")
     glowBottom:SetHeight(GLOW_SIZE)
     glowBottom:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.35))
+    table.insert(restGlow.modernPieces, glowTop)
+    table.insert(restGlow.modernPieces, glowBottom)
 
     local breathe = restGlow:CreateAnimationGroup()
     breathe:SetLooping("BOUNCE")
@@ -384,9 +392,9 @@ function Bar:UpdateFills()
     if self.fillStyle == style then return end
     self.fillStyle = style
     UseAtlasFill(self.xpFill, CLASSIC_ATLAS.fillXP, WHITE_COLOR, 1)
-    -- Quest-XP gibt es im Original nicht: Blizzards helle Vorschau-Textur entsättigt und in der
-    -- Quest-Farbe eingefärbt (die dunkle XP-Textur wäre eingefärbt kaum sichtbar).
-    UseAtlasFill(self.questFill, CLASSIC_ATLAS.prediction, questColor, questAlpha, true)
+    -- Quest-XP gibt es im Original nicht. Eingefärbte Blizzard-Texturen waren in Forever unsichtbar
+    -- (beobachtet 2026-10-06), deshalb wie im modernen Stil als einfarbige Fläche.
+    UseColorFill(self.questFill, questColor, questAlpha)
     UseAtlasFill(self.restedFill, CLASSIC_ATLAS.prediction, WHITE_COLOR, 1)
 end
 
@@ -478,13 +486,21 @@ function Bar:Anchor()
     local glow = self.restGlow
     glow:ClearAllPoints()
     glow:SetFrameStrata("MEDIUM")
-    if IsClassic() and container then
+    local frameArt = container and container.BarFrameTexture
+    local classicGlow = IsClassic() and frameArt and frameArt:GetAtlas()
+    if classicGlow then
         glow:SetAllPoints(container)
         glow:SetFrameLevel(container:GetFrameLevel() + 15)
+        glow.classicFrame:SetAtlas(classicGlow)
+        glow.classicFrame:ClearAllPoints()
+        glow.classicFrame:SetAllPoints(frameArt)
+        glow.classicFrame:SetVertexColor(COLORS.restGlow:GetRGB())
     else
         glow:SetAllPoints(f)
         glow:SetFrameLevel(f:GetFrameLevel() + 1)
     end
+    glow.classicFrame:SetShown(classicGlow and true or false)
+    for _, piece in ipairs(glow.modernPieces) do piece:SetShown(not classicGlow) end
 
     -- Der Info-Text richtet sich nach der obersten Leiste und muss mitwandern.
     if ns.InfoText.frame then ns.InfoText:Anchor() end
