@@ -8,7 +8,7 @@ This file is excluded from the player download via .pkgmeta.
 # Project fields
 
 - **Name:** XPForever
-- **Summary:** A cleaner experience bar for WoW Forever with quest XP and rested XP previews, XP per hour, time to level and kills to level.
+- **Summary:** See the XP of your completed quests and your rested XP right on the experience bar – plus XP per hour, time and kills to level.
 - **Logo:** `docs/images/logo.png` (256 × 256)
 - **Main category:** Quests & Leveling
 - **Additional categories:** Action Bars, Map & Minimap
@@ -21,73 +21,51 @@ This file is excluded from the player download via .pkgmeta.
 
 # Description (paste from here)
 
-![XPForever](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/hero.png)
+![XPForever](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-hero.jpg)
 
-**XPForever** replaces the experience bar with a cleaner, smarter one – made for World of Warcraft: Forever. See your XP, the XP from completed quests and your rested XP at a glance, plus XP per hour, time to level and kills to level.
+**XPForever** shows you exactly how close your next level is – made for World of Warcraft: Forever. Your experience bar shows the XP of quests you have completed but not turned in yet, and your rested XP. Above your action bars you see XP per hour, time to level and kills to level.
 
 ## Highlights
 
-- **A bar you can read** – thicker than the default bar, in the Forever style, with 20 segments
-- **Two styles** – the modern bar, or a classic one that looks like Blizzard's own with all the same features
-- **Quest XP preview** – see how much XP your completed quests give before you turn them in
-- **Rested XP preview** – see exactly how far your rested bonus reaches
-- **XP per hour, time to level, kills to level** – right above your action bars
-- **Rested indicator** – a subtle golden glow and "Zzz" while you rest
-- **Smooth animations** when you gain XP or level up
-- **Fully configurable** – colors, opacity, texts and position
-- **Lightweight** – nothing runs while nothing happens
+- **Quest XP on the bar** – completed quests light up in amber before you turn them in
+- **Stats on mouseover** – XP, missing XP, session XP, XP per hour and kills to level
+- **Info text above your action bars** – pick any of 10 values
+- **Modern or Classic** – a thicker bronze bar, or Blizzard's own look with every feature
+- **Rested XP preview**, a golden glow while resting and smooth animations
+- **Fully configurable** and lightweight – nothing runs while nothing happens
 
-## The experience bar
+## See your quest XP before you turn in
 
-Your XP, quest XP and rested XP in clear, separate colors. Quest XP and rested XP appear as a subtle preview behind your XP, so you always know where the next turn-in takes you.
+Every quest you have completed but not turned in yet adds its XP to the bar in amber. One look tells you whether your turn-ins will level you up. Rested XP follows in blue.
 
-![Experience bar](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/bar-colors.png)
+![Quest XP on the bar](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-quest-xp.jpg)
+
+## Your stats on mouseover
+
+Hover the bar for your level, XP and time to level right on the bar, plus a tooltip with your whole session: XP gained, XP per hour and how many kills you still need. Kills to level is learned from your recent kills, with quest turn-ins left out.
+
+![Stats on mouseover](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-mouseover.jpg)
+
+## Your numbers above the action bars
+
+One short line that stays in view while you quest. Choose from level, current XP, missing XP, progress in percent, quest XP, rested XP, XP per hour, time to level, kills to level and XP this session. Shift-drag it anywhere, click the bar to show or hide it.
+
+![Info text](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-info-text.jpg)
 
 ## Modern or Classic
 
-Pick the look that suits your UI. **Modern** is a thicker bar with a bronze border and segments. **Classic** keeps Blizzard's original experience bar and adds everything XPForever offers: quest XP and rested XP previews, animations, the golden rested glow and your own colors. On first start XPForever asks which one you like; switch any time in the settings or with **/xpf style**.
+**Modern** is a thicker bar with a bronze border and segments. **Classic** keeps Blizzard's original bar and adds everything XPForever offers. XPForever asks on first start; switch any time in the settings or with **/xpf style**.
 
-**Modern**
+![Modern or Classic](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-styles.jpg)
 
-![Modern style](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/style-modern.png)
+## And more
 
-**Classic**
-
-![Classic style](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/style-classic.png)
-
-## Details on mouseover
-
-Hover the bar for your level, XP, missing XP, XP per hour and time to level – plus a tooltip with your session statistics. You decide which values are shown.
-
-![Mouseover](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/bar-hover.png)
-
-## Info text
-
-One line above your action bars with the values you care about. It follows your action bars automatically, or you place it anywhere you like.
-
-![Info text](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/info-text.png)
-
-## Kills to level
-
-XPForever learns from your recent kills and estimates how many more you need. Quest turn-ins are recognized and left out.
-
-## Smooth animations
-
-The bar glides to its new state instead of jumping, and the XP you just gained lights up briefly.
+- **Smooth animations** – the bar glides to its new state and the XP you just gained lights up
+- **Resting** – a soft golden glow and "Zzz" while you rest in an inn or a city
+- **Settings** in **Options → AddOns → XPForever**: style, height, segments, colors and opacity, bar text and info text
+- **Minimap button** with a quick summary, or use the addon menu at the minimap
 
 ![Animation](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/animation.gif)
-
-## Resting
-
-While you rest in an inn or a city, the bar glows softly in gold and a small "Zzz" appears.
-
-![Resting](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/resting.png)
-
-## Settings
-
-Everything lives in **Options → AddOns → XPForever**: style, height, segments, colors and opacity, bar text and info text contents, XP per hour calculation and more. Open it with **/xpf**, a right-click on the bar or the minimap button.
-
-![Settings](https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/options.png)
 
 ## Usage
 
@@ -112,17 +90,17 @@ Everything lives in **Options → AddOns → XPForever**: style, height, segment
 
 # Gallery image titles
 
-| File | Title | Description |
+Images are built in the author's workspace; upload them under Images in this order.
+
+| # | Title | Description |
 |---|---|---|
-| hero.png | XPForever in the game | The new experience bar with info text above the action bars |
-| bar-colors.png | XP, quest XP and rested XP | Clear colors for your XP and the previews behind it |
-| style-modern.png | Modern style | A thicker bar with a bronze border and segments |
-| style-classic.png | Classic style | Blizzard's original look with all XPForever features |
-| bar-hover.png | Details on mouseover | Bar text and tooltip with session statistics |
-| info-text.png | Info text | XP per hour, time to level and kills to level above your action bars |
-| resting.png | Resting | Golden glow and "Zzz" while you rest |
-| options.png | Settings | Everything configurable in Options → AddOns |
-| options-colors.png | Colors | Choose colors and opacity for XP, quest XP and rested XP |
-| options-info-text.png | Info text settings | Pick exactly which values the info text shows |
-| bar-no-quest-xp.png | Without quest XP preview | Every preview can be turned off |
-| minimap.png *(to do)* | Minimap button | Quick summary and access to the settings |
+| 1 | XPForever | Quest XP, rested XP and your leveling stats – right on your experience bar |
+| 2 | See your quest XP before you turn in | Completed quests light up in amber, so you know right away if they'll level you up |
+| 3 | Your stats on mouseover | Current and missing XP, quest and rested XP, XP per hour and kills to level |
+| 4 | Your numbers above the action bars | Pick any of 10 values for the info text – always in view while you quest |
+| 5 | Modern or Classic | Two styles with every feature – switch any time with /xpf style |
+| 6 | Smooth animations | The bar glides to its new state and gained XP lights up |
+| 7 | Resting | A golden glow and "Zzz" while you rest in an inn or a city |
+| 8 | Settings | Everything configurable in Options → AddOns → XPForever |
+| 9 | Colors | Choose colors and opacity for XP, quest XP and rested XP |
+| 10 | Info text settings | Pick exactly which values the info text shows |
