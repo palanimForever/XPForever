@@ -72,7 +72,7 @@ local L = {
     optItemTime = "Time to level",
     optItemTimeTip = "Projected from your XP per hour.",
     optItemKills = "Kills to level",
-    optItemKillsTip = "Estimated from the XP of your last kills. Quest turn-ins are excluded.",
+    optItemKillsTip = "Estimated from the XP of your last kills. Quest turn-ins are excluded, and rested XP is taken into account: kills give double XP until it runs out.",
     optItemSession = "XP this session",
 
     -- Settings: main page (bar)
@@ -140,7 +140,7 @@ local L = {
     optStatsCategory = "Statistics & Reset",
     optSectionStats = "Calculation",
     optRateWindow = "Calculate XP/h over",
-    optRateWindowTip = "A short period reacts faster, e.g. after being AFK.",
+    optRateWindowTip = "A short period reacts faster to changes. Time without movement, combat or XP gains (3 minutes or more, e.g. AFK) doesn't count.",
     optRateWindow10 = "The last 10 minutes",
     optRateWindow30 = "The last 30 minutes",
     optRateWindowSession = "The whole session",
@@ -212,7 +212,7 @@ translations.deDE = {
     optItemTime = "Zeit bis Level-up",
     optItemTimeTip = "Hochgerechnet aus deinen XP pro Stunde.",
     optItemKills = "Kills bis Level-up",
-    optItemKillsTip = "Geschätzt aus der XP deiner letzten Kills. Quest-Abgaben werden herausgerechnet.",
+    optItemKillsTip = "Geschätzt aus der XP deiner letzten Kills. Quest-Abgaben werden herausgerechnet, Erholung wird berücksichtigt: Kills geben doppelte XP, bis sie aufgebraucht ist.",
     optItemSession = "XP dieser Sitzung",
 
     optSectionLook = "Aussehen",
@@ -274,7 +274,7 @@ translations.deDE = {
     optStatsCategory = "Statistik & Zurücksetzen",
     optSectionStats = "Berechnung",
     optRateWindow = "XP/h berechnen über",
-    optRateWindowTip = "Ein kurzer Zeitraum reagiert schneller, z. B. nach einer AFK-Pause.",
+    optRateWindowTip = "Ein kurzer Zeitraum reagiert schneller auf Änderungen. Zeit ohne Bewegung, Kampf oder XP-Gewinn (ab 3 Minuten, z. B. AFK) zählt nicht mit.",
     optRateWindow10 = "Die letzten 10 Minuten",
     optRateWindow30 = "Die letzten 30 Minuten",
     optRateWindowSession = "Die ganze Sitzung",

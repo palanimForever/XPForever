@@ -137,6 +137,7 @@ end
 
 -- Keep time-based texts (XP/h, time to level) and the info text position up to date.
 local function Tick()
+    ns.Stats.UpdateActiveClock()
     ns.Bar:RefreshText()
     ns.InfoText:Anchor()
     ns.InfoText:Refresh()
@@ -197,6 +198,19 @@ handlers.QUEST_LOG_UPDATE = ScheduleQuestUpdate
 function handlers.QUEST_TURNED_IN(questID, xpReward)
     ns.Stats.OnQuestTurnedIn(questID, xpReward)
     ScheduleRefresh()
+end
+
+-- Activity for the XP/h idle pause.
+function handlers.PLAYER_STARTED_MOVING()
+    ns.Stats.SetMoving(true)
+end
+
+function handlers.PLAYER_STOPPED_MOVING()
+    ns.Stats.SetMoving(false)
+end
+
+function handlers.PLAYER_REGEN_DISABLED()
+    ns.Stats.MarkActive()
 end
 
 function handlers.PLAYER_UPDATE_RESTING()

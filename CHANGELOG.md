@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+- XP per hour pauses while you're idle: time without movement, combat or XP gains (3 minutes or more, e.g. AFK) no longer lowers the rate. The session time in the tooltip counts active time only.
+- The kill estimate takes rested XP into account: kills give double XP until your rested XP runs out, so fewer kills are needed while you're rested.
+- Session statistics start fresh once after this update.
+
 ## 0.5.1-beta
 
 ### Changed
