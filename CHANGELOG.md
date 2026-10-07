@@ -1,5 +1,7 @@
 # XPForever Changelog
 
+## Unreleased
+
 ## 0.6.3-beta
 
 ### New
