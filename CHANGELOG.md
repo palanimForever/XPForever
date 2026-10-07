@@ -1,6 +1,9 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.6.3-beta
+
+### New
+- XPForever is now also available on Wago Addons.
 
 ## 0.6.2-beta
 
