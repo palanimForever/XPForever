@@ -1,6 +1,9 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.6.1-beta
+
+### Fixed
+- Classic style: the start of the experience bar no longer turns dark as you gain XP. The XP fill is now drawn in your XP color.
 
 ## 0.6.0-beta
 
