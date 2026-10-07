@@ -1,6 +1,9 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.6.2-beta
+
+### Changed
+- Holding Shift only highlights the info text while your mouse is over it, instead of anywhere on the screen.
 
 ## 0.6.1-beta
 
