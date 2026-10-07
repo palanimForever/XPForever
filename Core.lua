@@ -20,6 +20,7 @@ ns.defaults = {
     showQuestXP = true,
     showRestedXP = true,
     showRestIndicator = true,
+    showRestGlow = true,
     showTooltip = true,
     showMinimapButton = true,
     minimap = {}, -- minimap button position, managed by LibDBIcon

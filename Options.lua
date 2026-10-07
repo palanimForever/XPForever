@@ -97,7 +97,9 @@ local function RegisterBarPage(category)
     Header(category, L.optSectionPreview)
     Checkbox(category, "showQuestXP", L.optQuestXP, L.optQuestXPTip)
     Checkbox(category, "showRestedXP", L.optRestedXP, L.optRestedXPTip)
-    Checkbox(category, "showRestIndicator", L.optRestIndicator, L.optRestIndicatorTip)
+    local restIndicator = Checkbox(category, "showRestIndicator", L.optRestIndicator, L.optRestIndicatorTip)
+    DependsOn(Checkbox(category, "showRestGlow", L.optRestGlow, L.optRestGlowTip), restIndicator,
+        function() return XPForeverDB.showRestIndicator end)
 
     Header(category, L.optSectionMouse)
     Checkbox(category, "showTooltip", L.optTooltip, L.optTooltipTip)

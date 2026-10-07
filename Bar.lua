@@ -11,6 +11,10 @@ local GLOW_SIZE = 6
 local GRADIENT_SHADE = 0.55 -- brightness of the bottom edge when shading is on
 local ANIM_DURATION = 0.4
 local FLASH_DURATION = 0.8
+-- Rested glow: alpha range of the slow pulse and of the soft glow above and below the bar.
+local REST_GLOW_MIN_ALPHA = 0.15
+local REST_GLOW_MAX_ALPHA = 0.45
+local REST_GLOW_HALO_ALPHA = 0.25
 
 -- Classic style: Blizzard's frame has pointed ends that are transparent outside the outline, so a
 -- full-width rectangle peeks out at the corners. Pull the fill in a little at both ends.
@@ -191,22 +195,22 @@ local function CreateRestGlow(f)
     glowTop:SetPoint("BOTTOMLEFT", restGlow, "TOPLEFT")
     glowTop:SetPoint("BOTTOMRIGHT", restGlow, "TOPRIGHT")
     glowTop:SetHeight(GLOW_SIZE)
-    glowTop:SetGradient("VERTICAL", CreateColor(r, g, b, 0.35), CreateColor(r, g, b, 0))
+    glowTop:SetGradient("VERTICAL", CreateColor(r, g, b, REST_GLOW_HALO_ALPHA), CreateColor(r, g, b, 0))
 
     local glowBottom = restGlow:CreateTexture(nil, "BACKGROUND")
     glowBottom:SetTexture(WHITE)
     glowBottom:SetPoint("TOPLEFT", restGlow, "BOTTOMLEFT")
     glowBottom:SetPoint("TOPRIGHT", restGlow, "BOTTOMRIGHT")
     glowBottom:SetHeight(GLOW_SIZE)
-    glowBottom:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, 0.35))
+    glowBottom:SetGradient("VERTICAL", CreateColor(r, g, b, 0), CreateColor(r, g, b, REST_GLOW_HALO_ALPHA))
     table.insert(restGlow.modernPieces, glowTop)
     table.insert(restGlow.modernPieces, glowBottom)
 
     local breathe = restGlow:CreateAnimationGroup()
     breathe:SetLooping("BOUNCE")
     local fade = breathe:CreateAnimation("Alpha")
-    fade:SetFromAlpha(0.35)
-    fade:SetToAlpha(0.8)
+    fade:SetFromAlpha(REST_GLOW_MIN_ALPHA)
+    fade:SetToAlpha(REST_GLOW_MAX_ALPHA)
     fade:SetDuration(2)
     fade:SetSmoothing("IN_OUT")
 
@@ -565,19 +569,16 @@ function Bar:UpdateTextVisibility(instant)
     end)
 end
 
--- While resting (inn, capital city): show the Zzz icon and let the frame glow golden.
+-- While resting (inn, capital city): show the Zzz icon and let the frame glow golden (glow optional).
 function Bar:UpdateResting()
     if not self.frame then return end
-    local show = IsResting() and XPForeverDB.showRestIndicator
+    local db = XPForeverDB
+    local show = IsResting() and db.showRestIndicator
+    local glow = show and db.showRestGlow
     self.restIcon:SetShown(show)
-    self.restGlow:SetShown(show)
-    if show then
-        self.restIconAnim:Play()
-        self.restGlowAnim:Play()
-    else
-        self.restIconAnim:Stop()
-        self.restGlowAnim:Stop()
-    end
+    self.restGlow:SetShown(glow)
+    if show then self.restIconAnim:Play() else self.restIconAnim:Stop() end
+    if glow then self.restGlowAnim:Play() else self.restGlowAnim:Stop() end
 end
 
 function Bar:Layout(width)
