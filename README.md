@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/logo.png" alt="XPForever logo" width="128">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/logo.png" alt="XPForever logo" width="128">
 
 # XPForever
 
@@ -9,12 +9,12 @@ Quest XP from completed quests, rested XP, XP per hour, time to level and kills 
 
 [![CurseForge downloads](https://img.shields.io/curseforge/dt/1729338?label=CurseForge&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
 [![CurseForge version](https://img.shields.io/curseforge/v/1729338?label=version&color=9966ff)](https://www.curseforge.com/wow/addons/xpforever)
-[![License: MIT](https://img.shields.io/badge/license-MIT-9966ff)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-9966ff)](https://github.com/palanimForever/XPForever/blob/main/LICENSE)
 ![Game: WoW Forever](https://img.shields.io/badge/WoW-Forever%201.60-9e7a45)
 
 by **Palanim**
 
-<img src="docs/images/gallery-hero.jpg" alt="XPForever: the experience bar with tooltip and info text" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-hero.jpg" alt="XPForever: the experience bar with tooltip and info text" width="900">
 
 </div>
 
@@ -35,25 +35,25 @@ by **Palanim**
 
 Every quest you have completed but not turned in yet adds its XP to the bar in amber. One look tells you whether your turn-ins will level you up. Rested XP follows in blue.
 
-<img src="docs/images/gallery-quest-xp.jpg" alt="Quest XP and rested XP on the bar" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-quest-xp.jpg" alt="Quest XP and rested XP on the bar" width="900">
 
 ### Your stats on mouseover
 
 Hover the bar for your level, XP and time to level right on the bar, plus a tooltip with your whole session: XP gained, XP per hour and how many kills you still need. You choose which values the bar text shows.
 
-<img src="docs/images/gallery-mouseover.jpg" alt="Tooltip with session statistics" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-mouseover.jpg" alt="Tooltip with session statistics" width="900">
 
 ### Your numbers above the action bars
 
 One short line that stays in view while you quest. Choose from level, current XP, missing XP, progress in percent, quest XP, rested XP, XP per hour, time to level, kills to level and XP this session. It follows your action bars automatically, or you place it anywhere you like.
 
-<img src="docs/images/gallery-info-text.jpg" alt="Info text above the action bars" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-info-text.jpg" alt="Info text above the action bars" width="900">
 
 ### Modern or Classic
 
 **Modern** is a thicker bar with a bronze border and segments. **Classic** keeps Blizzard's original experience bar and adds everything XPForever offers: quest XP and rested XP previews, animations, the golden rested glow and your own colors. On first start XPForever asks which one you like; switch any time in the settings or with `/xpf style`.
 
-<img src="docs/images/gallery-styles.jpg" alt="Modern and Classic style" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/gallery-styles.jpg" alt="Modern and Classic style" width="900">
 
 ### Kills to level
 
@@ -63,22 +63,22 @@ XPForever learns how much XP your recent kills gave you and estimates how many m
 
 The bar glides to its new state instead of jumping, and the XP you just gained lights up briefly. Turn in a quest and watch your XP grow into the quest XP preview.
 
-<img src="docs/images/animation.gif" alt="The bar animating when quest XP changes" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/animation.gif" alt="The bar animating when quest XP changes" width="900">
 
 ### Resting
 
 While you rest in an inn or a city, the frame of the bar glows softly in gold and a small “Zzz” appears – the same style as the player frame.
 
-<img src="docs/images/resting.png" alt="Golden glow while resting" width="900">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/resting.png" alt="Golden glow while resting" width="900">
 
 ### Settings
 
 Everything is configurable in *Options → AddOns → XPForever*: style, height, segments, colors and opacity, what the bar text and the info text show, how XP per hour is calculated and more.
 
 <p>
-<img src="docs/images/options.png" alt="XPForever settings" width="32%">
-<img src="docs/images/options-colors.png" alt="Color settings" width="32%">
-<img src="docs/images/options-info-text.png" alt="Info text settings" width="32%">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/options.png" alt="XPForever settings" width="32%">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/options-colors.png" alt="Color settings" width="32%">
+<img src="https://raw.githubusercontent.com/palanimForever/XPForever/main/docs/images/options-info-text.png" alt="Info text settings" width="32%">
 </p>
 
 ### Minimap button
@@ -123,4 +123,4 @@ XPForever is made by **Palanim**. It embeds [LibStub](https://www.wowace.com/pro
 
 ## License
 
-MIT – see [LICENSE](LICENSE). Embedded libraries keep their own licenses.
+MIT – see [LICENSE](https://github.com/palanimForever/XPForever/blob/main/LICENSE). Embedded libraries keep their own licenses.

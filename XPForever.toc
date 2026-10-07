@@ -8,6 +8,7 @@
 ## IconTexture: Interface\AddOns\XPForever\Media\icon
 ## Version: @project-version@
 ## X-Curse-Project-ID: 1729338
+## X-Wago-ID: L6Jb2R6v
 ## X-Website: https://github.com/palanimForever/XPForever
 ## SavedVariables: XPForeverDB
 ## SavedVariablesPerCharacter: XPForeverCharDB
