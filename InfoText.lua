@@ -27,7 +27,7 @@ function InfoText:Init()
     f:RegisterForDrag("LeftButton")
     self.frame = f
 
-    -- Highlight that only appears while Shift is held, showing that the text can be moved.
+    -- Highlight that only appears while Shift is held over the text, showing that it can be moved.
     local dragBackground = f:CreateTexture(nil, "BACKGROUND")
     dragBackground:SetAllPoints()
     dragBackground:SetColorTexture(0.3, 0.6, 1, 0.25)
@@ -65,6 +65,7 @@ function InfoText:Init()
         end
     end)
     f:SetScript("OnEnter", function()
+        self:UpdateMouse()
         GameTooltip:SetOwner(f, "ANCHOR_TOP")
         GameTooltip:SetText(ns.BrandLine())
         GameTooltip:AddLine(ns.ClickHint("LeftButton", "SHIFT", L.actionDragMove, L.infoDragHint),
@@ -73,7 +74,10 @@ function InfoText:Init()
             GRAY_FONT_COLOR:GetRGB())
         GameTooltip:Show()
     end)
-    f:SetScript("OnLeave", GameTooltip_Hide)
+    f:SetScript("OnLeave", function()
+        GameTooltip_Hide()
+        self:UpdateMouse()
+    end)
 
     -- Without Shift the text ignores the mouse (clicks and camera turning underneath work normally).
     f:RegisterEvent("MODIFIER_STATE_CHANGED")
@@ -83,11 +87,12 @@ function InfoText:Init()
     EventRegistry:RegisterCallback("EditMode.Exit", function() self:Anchor() end, self)
 end
 
--- Only accept the mouse while Shift is held; then also show the move highlight.
+-- Only accept the mouse while Shift is held. The move highlight appears only while the mouse is
+-- over the text (or it is being dragged), not everywhere on the screen.
 function InfoText:UpdateMouse()
     local movable = IsShiftKeyDown() or self.isMoving
     self.frame:EnableMouse(movable)
-    self.dragBackground:SetShown(movable)
+    self.dragBackground:SetShown(self.isMoving or (movable and self.frame:IsMouseOver()))
     if not movable and GameTooltip:GetOwner() == self.frame then
         GameTooltip_Hide()
     end
