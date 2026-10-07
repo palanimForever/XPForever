@@ -23,7 +23,6 @@ local CLASSIC_END_INSET = 3
 -- Blizzard's original experience bar textures, used by the Classic style.
 local CLASSIC_ATLAS = {
     background = "UI-HUD-ExperienceBar-Background",
-    fillXP = "UI-HUD-ExperienceBar-Fill-Experience",
     prediction = "UI-HUD-ExperienceBar-Fill-Prediction",
 }
 local WHITE_COLOR = CreateColor(1, 1, 1)
@@ -402,8 +401,6 @@ end
 
 -- Classic: Blizzard's texture while a fill keeps its default look, otherwise the color from the settings.
 -- Tinted Blizzard textures were invisible in Forever, so a chosen color is a solid fill like in Modern.
--- Blizzard colors XP blue while you are rested; next to the blue rested preview that would be hard to
--- tell apart, so the default XP texture is always the purple one.
 local function UseClassicFill(tex, atlas, colorKey, opacityKey)
     local alpha = opacityKey and XPForeverDB[opacityKey] / 100 or 1
     if IsDefaultLook(colorKey, opacityKey) then
@@ -428,7 +425,8 @@ function Bar:UpdateFills()
         db.restedOpacity, tostring(db.fillGradient) }, ":")
     if self.fillStyle == style then return end
     self.fillStyle = style
-    UseClassicFill(self.xpFill, CLASSIC_ATLAS.fillXP, "colorXP")
+    -- XP is always solid: Blizzard's fill texture showed a dark, growing gap at the start of the bar.
+    UseColorFill(self.xpFill, ns.GetColor("colorXP"), 1)
     -- Quest XP doesn't exist in the original, so it is always a solid fill.
     UseColorFill(self.questFill, questColor, questAlpha)
     UseClassicFill(self.restedFill, CLASSIC_ATLAS.prediction, "colorRested", "restedOpacity")
@@ -541,6 +539,69 @@ function Bar:Anchor()
 
     -- The info text follows the topmost bar and has to move along.
     if ns.InfoText.frame then ns.InfoText:Anchor() end
+end
+
+-- Developer diagnostics (/xpf debug): geometry of our fill and every visible region of Blizzard's
+-- experience bar container that overlaps the first segment. Helps to find what covers the bar's start.
+-- Textures have no GetEffectiveAlpha; their alpha times the parent frame's effective alpha.
+local function EffectiveAlpha(region)
+    if region.GetEffectiveAlpha then return region:GetEffectiveAlpha() end
+    return region:GetAlpha() * region:GetParent():GetEffectiveAlpha()
+end
+
+local function DescribeRegion(region)
+    local info = {
+        name = region:GetDebugName(),
+        type = region:GetObjectType(),
+        left = region:GetLeft(), right = region:GetRight(),
+        alpha = EffectiveAlpha(region),
+    }
+    if region.GetDrawLayer then
+        info.layer, info.subLevel = region:GetDrawLayer()
+        info.atlas = region.GetAtlas and region:GetAtlas()
+        info.texture = region.GetTexture and region:GetTexture()
+    else
+        info.strata, info.level = region:GetFrameStrata(), region:GetFrameLevel()
+    end
+    return info
+end
+
+function Bar:DebugInfo()
+    if not self.frame then return nil end
+    local inner, fill = self.inner, self.xpFill
+    local result = {
+        style = XPForeverDB.barStyle,
+        innerLeft = inner:GetLeft(), innerRight = inner:GetRight(),
+        fillLeft = fill:GetLeft(), fillRight = fill:GetRight(), fillShown = fill:IsShown(),
+        fillTexCoord = { fill:GetTexCoord() },
+        fillAtlas = fill:GetAtlas(), fillTexture = fill:GetTexture(), fillAlpha = fill:GetAlpha(),
+        display = self.display and CopyTable(self.display),
+        animating = self.animator:GetScript("OnUpdate") ~= nil,
+        flashShown = self.flashFrame:IsShown(), flashAlpha = self.flashFrame:GetAlpha(),
+        overlapping = {},
+    }
+    local left = inner:GetLeft()
+    local width = inner:GetWidth()
+    if not left or width <= 0 then return result end
+    local segmentEnd = left + width / 20
+
+    local function Visit(frame)
+        if not frame:IsVisible() then return end
+        local regions = { frame }
+        for _, region in ipairs({ frame:GetRegions() }) do table.insert(regions, region) end
+        for _, region in ipairs(regions) do
+            local rLeft, rRight = region:GetLeft(), region:GetRight()
+            if region:IsVisible() and EffectiveAlpha(region) > 0 and rLeft and rRight
+                and rLeft < segmentEnd and rRight > left then
+                table.insert(result.overlapping, DescribeRegion(region))
+            end
+        end
+        for _, child in ipairs({ frame:GetChildren() }) do Visit(child) end
+    end
+    local container = FindXPContainer()
+    if container then Visit(container) end
+    Visit(self.frame)
+    return result
 end
 
 -- Bar text depending on the setting: on mouseover, always or never. Fades smoothly.

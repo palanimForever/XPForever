@@ -274,6 +274,7 @@ local function ReportBlizzardBars()
             tostring(entry.tickVisible), entry.tickAlpha or -1, entry.tickEffectiveAlpha or -1))
     end
     XPForeverDB.debug = result
+    XPForeverDB.debugBar = ns.Bar:DebugInfo()
 end
 
 SLASH_XPFOREVER1 = "/xpf"
