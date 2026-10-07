@@ -1,11 +1,15 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.6.0-beta
+
+### New
+- Option to turn off the glow while resting and keep only the “Zzz” (Bar → Glow while resting).
 
 ### Changed
 - XP per hour pauses while you're idle: time without movement, combat or XP gains (3 minutes or more, e.g. AFK) no longer lowers the rate. The session time in the tooltip counts active time only.
 - The kill estimate takes rested XP into account: kills give double XP until your rested XP runs out, so fewer kills are needed while you're rested.
 - Session statistics start fresh once after this update.
+- The golden glow while resting is softer in both styles.
 
 ## 0.5.1-beta
 
