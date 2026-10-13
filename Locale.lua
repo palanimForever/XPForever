@@ -44,6 +44,7 @@ local L = {
     itemUnknown = "–",
     infoDragHint = "Shift-drag: move",
     infoResetHint = "Shift-right-click: back above the action bars",
+    infoMoveTip = "These stats can be moved",
     infoShown = "Info text shown.",
     infoHidden = "Info text hidden. Click the experience bar to show it again.",
 
@@ -189,6 +190,7 @@ translations.deDE = {
     itemLabelSession = "Sitzung",
     infoDragHint = "Shift + Ziehen: verschieben",
     infoResetHint = "Shift + Rechtsklick: zurück über die Aktionsleisten",
+    infoMoveTip = "Diese Werte lassen sich verschieben",
     infoShown = "Info-Text eingeblendet.",
     infoHidden = "Info-Text ausgeblendet. Ein Klick auf die Erfahrungsleiste blendet ihn wieder ein.",
 

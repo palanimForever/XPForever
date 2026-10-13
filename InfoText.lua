@@ -3,6 +3,16 @@ local L = ns.L
 
 local PADDING = 6
 
+-- One-time hint next to the text, in the look of Blizzard's tutorial help tips, but compact.
+local HINT_PADDING = 10
+local HINT_LINE_SPACING = 3
+local HINT_CLOSE_SIZE = 16
+local HINT_DISTANCE = 20 -- gap between the text and the hint; the arrow sits in it
+local HINT_ARROW_SIZE = 61 -- arrow frame as in HelpTip, the arrow texture is centered in it
+local HINT_ARROW_OFFSET = -5
+local HINT_ARROW_LEFT = 90 -- degrees; the arrow texture points down unrotated
+local HINT_GLOW_OFFSET = -4 -- glow behind the arrow, HelpTip's offset for a left-pointing arrow
+
 local InfoText = {}
 ns.InfoText = InfoText
 
@@ -50,6 +60,7 @@ function InfoText:Init()
         -- We store the position ourselves; WoW's own layout cache would interfere.
         f:SetUserPlaced(false)
         self.isMoving = false
+        if self.moveHint then self.moveHint:Hide() end
         local x, y = f:GetCenter()
         XPForeverDB.infoPoint = { x = x, y = y }
         ns.Options:SetValue("infoPosition", "free")
@@ -138,6 +149,55 @@ function InfoText:Anchor()
     else
         f:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 140)
     end
+end
+
+-- Shown once (after the style choice on first start): points at the text and explains how to move it.
+-- Our own frame instead of HelpTip:Show, so Blizzard's shared help tip pool stays untouched (taint).
+-- Child of the text, so it hides along with it. Sits to the right: above the text there may be bars.
+function InfoText:ShowMoveHintOnce()
+    local f = self.frame
+    if XPForeverDB.infoMoveHintSeen or not f or not f:IsShown() then return end
+    XPForeverDB.infoMoveHintSeen = true
+
+    local hint = CreateFrame("Frame", nil, f, "GlowBoxTemplate")
+    hint:SetFrameStrata("DIALOG")
+    hint:SetClampedToScreen(true)
+    hint:SetPoint("LEFT", f, "RIGHT", HINT_DISTANCE, 0)
+    hint:EnableMouse(true)
+
+    local text = hint:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    text:SetJustifyH("LEFT")
+    text:SetSpacing(HINT_LINE_SPACING)
+    text:SetPoint("TOPLEFT", HINT_PADDING, -HINT_PADDING)
+    text:SetText(table.concat({
+        NORMAL_FONT_COLOR:WrapTextInColorCode(L.infoMoveTip),
+        ns.ClickHint("LeftButton", "SHIFT", L.actionDragMove, L.infoDragHint),
+        ns.ClickHint("RightButton", "SHIFT", L.actionResetPosition, L.infoResetHint),
+    }, "\n"))
+    hint:SetSize(text:GetStringWidth() + HINT_PADDING * 2 + HINT_CLOSE_SIZE,
+        text:GetStringHeight() + HINT_PADDING * 2)
+
+    -- Blizzard's arrow template only centers the arrow in HelpTip's OnLoad, so do the same here.
+    local arrow = CreateFrame("Frame", nil, hint, "GlowBoxArrowTemplate")
+    arrow:SetSize(HINT_ARROW_SIZE, HINT_ARROW_SIZE)
+    arrow:SetPoint("CENTER", hint, "LEFT", HINT_ARROW_OFFSET, 0)
+    arrow.Arrow:ClearAllPoints()
+    arrow.Arrow:SetPoint("CENTER")
+    SetClampedTextureRotation(arrow.Arrow, HINT_ARROW_LEFT)
+    SetClampedTextureRotation(arrow.Glow, HINT_ARROW_LEFT)
+    arrow.Glow:ClearAllPoints()
+    arrow.Glow:SetPoint("CENTER", arrow.Arrow, "CENTER", HINT_GLOW_OFFSET, 0)
+
+    -- Small yellow X like on Blizzard's help tips.
+    local close = CreateFrame("Button", nil, hint)
+    close:SetSize(HINT_CLOSE_SIZE, HINT_CLOSE_SIZE)
+    close:SetPoint("TOPRIGHT", -3, -3)
+    close:SetNormalAtlas("common-icon-yellowx")
+    close:SetPushedAtlas("common-icon-yellowx-down")
+    close:SetHighlightAtlas("common-icon-yellowx", "ADD")
+    close:SetScript("OnClick", function() hint:Hide() end)
+
+    self.moveHint = hint
 end
 
 function InfoText:Refresh()

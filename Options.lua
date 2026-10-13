@@ -227,7 +227,11 @@ local STYLE_PROMPT_DELAY = 3
 local STYLE_PROMPT_RETRY = 5
 
 function Options:ShowStylePromptOnce()
-    if XPForeverDB.stylePromptSeen then return end
+    if XPForeverDB.stylePromptSeen then
+        -- Players who chose their style before the move hint existed get the hint on its own.
+        C_Timer.After(STYLE_PROMPT_DELAY, function() ns.InfoText:ShowMoveHintOnce() end)
+        return
+    end
     C_Timer.After(STYLE_PROMPT_DELAY, function()
         if XPForeverDB.stylePromptSeen then return end
         if InCombatLockdown() then
@@ -262,6 +266,8 @@ function Options:ShowStylePrompt()
         prompt:SetFrameStrata("DIALOG")
         prompt:SetToplevel(true)
         prompt:EnableMouse(true)
+        -- After the style choice, point out that the info text can be moved (only the first time).
+        prompt:SetScript("OnHide", function() ns.InfoText:ShowMoveHintOnce() end)
 
         -- Blizzard's dialog border as a child frame: the template uses setAllPoints and would stretch a
         -- window that inherits it directly to the size of the screen.

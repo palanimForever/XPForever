@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### New
+- A one-time hint points at the stats above your action bars and shows how to move them (Shift-drag) and put them back (Shift-right-click). New players see it right after choosing their style.
+
 ## 0.6.3-beta
 
 ### New
