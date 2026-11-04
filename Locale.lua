@@ -48,6 +48,13 @@ local L = {
     infoShown = "Info text shown.",
     infoHidden = "Info text hidden. Click the experience bar to show it again.",
 
+    -- Bartender4 support (work in progress)
+    bartenderTooltip = "Bartender mode (beta): position, size and fading come from Bartender",
+    bartenderDetected = "Bartender4 detected: the experience bar now follows Bartender's Status Tracking Bar "
+        .. "(move, scale and fade it in /bt4). Bartender support is new – please report anything that looks off.",
+    bartenderStatusBarOff = "Bartender's Status Tracking Bar is turned off, so the experience bar is hidden. "
+        .. "Turn it on in /bt4 → Status Tracking Bar.",
+
     -- Chat
     sessionReset = "Session statistics reset.",
     settingsReset = "All settings reset to defaults.",
@@ -193,6 +200,13 @@ translations.deDE = {
     infoMoveTip = "Diese Werte lassen sich verschieben",
     infoShown = "Info-Text eingeblendet.",
     infoHidden = "Info-Text ausgeblendet. Ein Klick auf die Erfahrungsleiste blendet ihn wieder ein.",
+
+    bartenderTooltip = "Bartender-Modus (Beta): Lage, Größe und Ausblenden kommen von Bartender",
+    bartenderDetected = "Bartender4 erkannt: Die Erfahrungsleiste folgt jetzt Bartenders Statusleiste "
+        .. "(„Status Tracking Bar“, verschieben, skalieren und ausblenden in /bt4). Die Bartender-Unterstützung "
+        .. "ist neu – bitte melde, wenn etwas nicht passt.",
+    bartenderStatusBarOff = "Bartenders Statusleiste („Status Tracking Bar“) ist ausgeschaltet, deshalb ist die "
+        .. "Erfahrungsleiste ausgeblendet. Einschalten in /bt4.",
 
     sessionReset = "Sitzungsstatistik zurückgesetzt.",
     settingsReset = "Alle Einstellungen auf Standard zurückgesetzt.",

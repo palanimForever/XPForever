@@ -493,11 +493,15 @@ end
 -- Modern: centered on Blizzard's experience bar container (own height), above its frame.
 -- Classic: exactly on Blizzard's (hidden) experience bar, below its frame and dividers.
 -- In both cases Edit Mode moves our bar along.
+-- With Bartender, our bar is a child of the container: it takes over Bartender's scale, alpha and
+-- visibility, and hides when Bartender's status bar is turned off.
 function Bar:Anchor()
     local f = self.frame
     local container = FindXPContainer()
     local blizzardBar = container and container.bars and StatusTrackingBarInfo
         and container.bars[StatusTrackingBarInfo.BarsEnum.Experience]
+    local parent = container and ns.Bartender:IsActive() and container or UIParent
+    if f:GetParent() ~= parent then f:SetParent(parent) end
     f:ClearAllPoints()
     if IsClassic() and blizzardBar then
         f:SetAllPoints(blizzardBar)
@@ -819,6 +823,9 @@ function Bar:ShowTooltip()
     tooltip:AddLine(ns.ClickHint("LeftButton", "CTRL", L.actionResetSession, L.hintResetSession),
         GRAY_FONT_COLOR:GetRGB())
     tooltip:AddLine(ns.ClickHint("RightButton", nil, L.actionOptions, L.hintOptions), GRAY_FONT_COLOR:GetRGB())
+    if ns.Bartender:IsActive() then
+        tooltip:AddLine(L.bartenderTooltip, GRAY_FONT_COLOR:GetRGB())
+    end
     tooltip:AddLine(" ")
     tooltip:AddLine(ns.BrandLine(), GRAY_FONT_COLOR:GetRGB())
     tooltip:Show()

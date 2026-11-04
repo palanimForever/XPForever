@@ -2,7 +2,7 @@ local addonName, ns = ...
 local L = ns.L
 
 -- Entry point: default settings, events, periodic updates and slash commands.
--- Load order (see .toc): embeds.xml (libs) → Locale → Core → Stats → Text → Bar → InfoText
+-- Load order (see .toc): embeds.xml (libs) → Locale → Core → Stats → Text → Bartender → Bar → InfoText
 -- → MinimapButton → Options.
 
 local REFRESH_DELAY = 0.1 -- seconds; merges related events into a single redraw
@@ -181,6 +181,7 @@ function handlers.PLAYER_ENTERING_WORLD(isInitialLogin)
         ns.InfoText:Init()
         C_Timer.NewTicker(TICK_INTERVAL, Tick)
         ns.Options:ShowStylePromptOnce()
+        ns.Bartender:ShowHintOnce()
     end
     ns.ApplySettings()
 end
@@ -275,6 +276,7 @@ local function ReportBlizzardBars()
     end
     XPForeverDB.debug = result
     XPForeverDB.debugBar = ns.Bar:DebugInfo()
+    XPForeverDB.debugBartender = ns.Bartender:DebugInfo()
 end
 
 SLASH_XPFOREVER1 = "/xpf"

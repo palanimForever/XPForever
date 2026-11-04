@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New
+- Bartender4 support (beta): with Bartender's Status Tracking Bar turned on, the experience bar follows it – position, width, scale and fading are set in Bartender. If that bar is turned off, the experience bar is hidden too. A one-time chat message explains this when Bartender is installed.
+- The info text also makes room for Bartender's action bars above the experience bar.
+
 ## 0.7.0-beta
 
 ### New

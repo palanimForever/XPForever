@@ -27,6 +27,19 @@ local function CenterXInUIParent(frame)
     return x and x * frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
 end
 
+local function BottomInUIParent(frame)
+    local bottom = frame:GetBottom()
+    return bottom and bottom * frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+end
+
+local function LeftRightInUIParent(frame)
+    if not frame then return nil end
+    local left, right = frame:GetLeft(), frame:GetRight()
+    if not (left and right) then return nil end
+    local factor = frame:GetEffectiveScale() / UIParent:GetEffectiveScale()
+    return left * factor, right * factor
+end
+
 function InfoText:Init()
     if self.frame then return end
 
@@ -129,15 +142,29 @@ function InfoText:Anchor()
         return
     end
 
+    -- With the whole interface hidden (Alt-Z) nothing counts as visible; keep the last position.
+    if not UIParent:IsVisible() then return end
+
     -- Automatic: above the highest visible bar of the bottom stack, centered on the experience bar.
     local top, centerX
     local bars = { ns.Bar.frame, MainActionBar, MultiBarBottomLeft, MultiBarBottomRight }
     -- Blizzard containers holding e.g. the reputation bar (the XP container is covered by our bar).
+    -- With Bartender they sit in its status bar or are hidden together with it.
     for _, container in ipairs(StatusTrackingBarManager and StatusTrackingBarManager.barContainers or {}) do
         table.insert(bars, container)
     end
+    -- Bartender's action bars, but only those in the lower half above or below our bar (not side bars).
+    local barLeft, barRight = LeftRightInUIParent(ns.Bar.frame)
+    for _, bar in ipairs(ns.Bartender:VisibleActionBars()) do
+        local left, right = LeftRightInUIParent(bar)
+        local bottom = BottomInUIParent(bar)
+        if barLeft and left and bottom and left < barRight and right > barLeft
+            and bottom < UIParent:GetHeight() / 2 then
+            table.insert(bars, bar)
+        end
+    end
     for _, bar in ipairs(bars) do
-        if bar and bar:IsShown() then
+        if bar and bar:IsVisible() then
             local barTop = TopInUIParent(bar)
             if barTop and (not top or barTop > top) then top = barTop end
         end
