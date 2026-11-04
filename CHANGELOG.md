@@ -1,6 +1,8 @@
 # XPForever Changelog
 
-## Unreleased
+## 1.0.0
+
+First stable release for the launch of WoW Forever. Same features as 0.8.0-beta.
 
 ## 0.8.0-beta
 
