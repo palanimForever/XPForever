@@ -1,6 +1,6 @@
 # XPForever Changelog
 
-## Unreleased
+## 0.8.0-beta
 
 ### New
 - Bartender4 support (beta): with Bartender's Status Tracking Bar turned on, the experience bar follows it – position, width, scale and fading are set in Bartender. If that bar is turned off, the experience bar is hidden too. A one-time chat message explains this when Bartender is installed.
