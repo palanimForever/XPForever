@@ -1,6 +1,6 @@
 # XPForever Changelog
 
-## Unreleased
+## 1.0.1
 
 ### Fixed
 - Searching in the game options no longer causes repeated "XPForever has been blocked from an action only available to the Blizzard UI" errors.
