@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Searching in the game options no longer causes repeated "XPForever has been blocked from an action only available to the Blizzard UI" errors.
+
 ## 1.0.0
 
 First stable release for the launch of WoW Forever. Same features as 0.8.0-beta.

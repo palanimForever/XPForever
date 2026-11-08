@@ -17,27 +17,38 @@ StaticPopupDialogs["XPFOREVER_RESET_SETTINGS"] = {
     timeout = 0,
 }
 
-local function Header(category, text)
-    local layout = SettingsPanel:GetLayout(category)
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(text))
+-- Add every element through Settings.RegisterInitializer: it inserts into the page layout in secure
+-- execution. Settings.CreateCheckbox & co. (and layout:AddInitializer) insert from our code instead,
+-- which taints the layout. Blizzard's settings search reads every layout, so a search would then run
+-- tainted and get blocked on protected calls of other entries (e.g. the Discord button).
+local function Add(category, initializer)
+    Settings.RegisterInitializer(category, initializer)
+    return initializer
 end
 
+local function Header(category, text)
+    Add(category, CreateSettingsListSectionHeaderInitializer(text))
+end
+
+-- No search tags: AddSearchTags would run in our code and taint the tags the search reads.
 local function Button(category, name, buttonText, onClick, tooltip)
-    local layout = SettingsPanel:GetLayout(category)
-    layout:AddInitializer(CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip, true))
+    Add(category, CreateSettingsButtonInitializer(name, buttonText, onClick, tooltip, false))
 end
 
 local function Register(category, key, name)
     local default = ns.defaults[key]
     local setting = Settings.RegisterAddOnSetting(category, "XPForever_" .. key, key, XPForeverDB,
         type(default), name, default)
-    setting:SetValueChangedCallback(function() ns.ApplySettings() end)
+    setting:SetValueChangedCallback(function()
+        ns.ApplySettings()
+        Options.RefreshDependents()
+    end)
     Options.settings[key] = setting
     return setting
 end
 
 local function Checkbox(category, key, name, tooltip)
-    return Settings.CreateCheckbox(category, Register(category, key, name), tooltip)
+    return Add(category, Settings.CreateCheckboxInitializer(Register(category, key, name), nil, tooltip))
 end
 
 local function FormatPercentLabel(value)
@@ -47,7 +58,7 @@ end
 local function Slider(category, key, name, tooltip, min, max, step, formatter)
     local options = Settings.CreateSliderOptions(min, max, step)
     options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, formatter)
-    return Settings.CreateSlider(category, Register(category, key, name), options, tooltip)
+    return Add(category, Settings.CreateSliderInitializer(Register(category, key, name), options, tooltip))
 end
 
 -- entries: list of { value, label }
@@ -59,46 +70,61 @@ local function Dropdown(category, key, name, tooltip, entries)
         end
         return container:GetData()
     end
-    return Settings.CreateDropdown(category, Register(category, key, name), GetOptions, tooltip)
+    return Add(category, Settings.CreateDropdownInitializer(Register(category, key, name), GetOptions, tooltip))
 end
 
 local function ColorSwatch(category, key, name)
-    return Settings.CreateColorSwatch(category, Register(category, key, name))
+    return Add(category, Settings.CreateColorSwatchInitializer(Register(category, key, name)))
 end
 
--- Only enable a control while a condition is met (grayed out otherwise).
--- Blizzard re-evaluates the condition whenever the parent initializer's setting changes.
-local function DependsOn(initializer, parentInitializer, predicate)
-    initializer:SetParentInitializer(parentInitializer, predicate)
+-- Only enable a control while a condition is met (grayed out otherwise), indented below the control
+-- it depends on. Deliberately not SetParentInitializer: Blizzard's settings search reads that field
+-- on every match, and written from our code it is tainted (verified in the client). The modify
+-- predicate is only read when the control itself is shown. Without a parent, Blizzard does not
+-- re-evaluate on changes, so RefreshDependents does that.
+local dependents = {}
+
+local function DependsOn(initializer, predicate)
+    initializer:AddModifyPredicate(predicate)
+    initializer.data.indent = true
+    dependents[initializer] = true
+end
+
+function Options.RefreshDependents()
+    if not SettingsPanel:IsShown() then return end
+    SettingsPanel:GetSettingsList().ScrollBox:ForEachFrame(function(frame)
+        if dependents[frame:GetElementData()] and frame.EvaluateState then
+            frame:EvaluateState()
+        end
+    end)
 end
 
 -- Checkboxes for all text items (ns.TEXT_ITEMS); prefix is "bar" or "info".
-local function ContentCheckboxes(category, prefix, parentInitializer, predicate)
+local function ContentCheckboxes(category, prefix, predicate)
     for _, item in ipairs(ns.TEXT_ITEMS) do
         local name, tooltip = L["optItem" .. item.id], L["optItem" .. item.id .. "Tip"]
-        local checkbox = Checkbox(category, prefix .. item.id, name, tooltip)
-        DependsOn(checkbox, parentInitializer, predicate)
+        DependsOn(Checkbox(category, prefix .. item.id, name, tooltip), predicate)
     end
 end
 
 local function RegisterBarPage(category)
     Header(category, L.optSectionLook)
-    local style = Dropdown(category, "barStyle", L.optStyle, L.optStyleTip, {
+    Dropdown(category, "barStyle", L.optStyle, L.optStyleTip, {
         { "modern", L.optStyleModern },
         { "classic", L.optStyleClassic },
     })
     -- Height and our own segments only exist in the Modern style (Classic uses Blizzard's size).
     local function IsModern() return XPForeverDB.barStyle ~= "classic" end
-    DependsOn(Slider(category, "height", L.optHeight, L.optHeightTip, 12, 32, 1), style, IsModern)
-    DependsOn(Checkbox(category, "showSegments", L.optSegments, L.optSegmentsTip), style, IsModern)
+    DependsOn(Slider(category, "height", L.optHeight, L.optHeightTip, 12, 32, 1), IsModern)
+    DependsOn(Checkbox(category, "showSegments", L.optSegments, L.optSegmentsTip), IsModern)
     Checkbox(category, "showPercent", L.optPercent, L.optPercentTip)
     Checkbox(category, "animate", L.optAnimate, L.optAnimateTip)
 
     Header(category, L.optSectionPreview)
     Checkbox(category, "showQuestXP", L.optQuestXP, L.optQuestXPTip)
     Checkbox(category, "showRestedXP", L.optRestedXP, L.optRestedXPTip)
-    local restIndicator = Checkbox(category, "showRestIndicator", L.optRestIndicator, L.optRestIndicatorTip)
-    DependsOn(Checkbox(category, "showRestGlow", L.optRestGlow, L.optRestGlowTip), restIndicator,
+    Checkbox(category, "showRestIndicator", L.optRestIndicator, L.optRestIndicatorTip)
+    DependsOn(Checkbox(category, "showRestGlow", L.optRestGlow, L.optRestGlowTip),
         function() return XPForeverDB.showRestIndicator end)
 
     Header(category, L.optSectionMouse)
@@ -106,12 +132,12 @@ local function RegisterBarPage(category)
     Checkbox(category, "showMinimapButton", L.optMinimap, L.optMinimapTip)
 
     Header(category, L.optSectionBarText)
-    local mode = Dropdown(category, "barTextMode", L.optBarText, L.optBarTextTip, {
+    Dropdown(category, "barTextMode", L.optBarText, L.optBarTextTip, {
         { "hover", L.optBarTextHover },
         { "always", L.optBarTextAlways },
         { "never", L.optBarTextNever },
     })
-    ContentCheckboxes(category, "bar", mode, function() return XPForeverDB.barTextMode ~= "never" end)
+    ContentCheckboxes(category, "bar", function() return XPForeverDB.barTextMode ~= "never" end)
 
     -- End of the main page: name, author and version.
     Header(category, L.aboutLine:format(ns.BrandLine(), ns.VERSION))
@@ -130,22 +156,21 @@ end
 
 local function RegisterInfoPage(category)
     Header(category, L.optSectionInfoGeneral)
-    local enabled = Checkbox(category, "infoEnabled", L.optInfoEnabled, L.optInfoEnabledTip)
+    Checkbox(category, "infoEnabled", L.optInfoEnabled, L.optInfoEnabledTip)
     local function IsEnabled() return XPForeverDB.infoEnabled end
 
-    local position = Dropdown(category, "infoPosition", L.optInfoPosition, L.optInfoPositionTip, {
+    DependsOn(Dropdown(category, "infoPosition", L.optInfoPosition, L.optInfoPositionTip, {
         { "auto", L.optInfoPositionAuto },
         { "free", L.optInfoPositionFree },
-    })
-    DependsOn(position, enabled, IsEnabled)
+    }), IsEnabled)
 
-    local offset = Slider(category, "infoOffset", L.optInfoOffset, L.optInfoOffsetTip, 0, 40, 1)
-    DependsOn(offset, position, function() return IsEnabled() and XPForeverDB.infoPosition == "auto" end)
+    DependsOn(Slider(category, "infoOffset", L.optInfoOffset, L.optInfoOffsetTip, 0, 40, 1),
+        function() return IsEnabled() and XPForeverDB.infoPosition == "auto" end)
 
-    DependsOn(Slider(category, "infoFontSize", L.optInfoFontSize, nil, 9, 20, 1), enabled, IsEnabled)
+    DependsOn(Slider(category, "infoFontSize", L.optInfoFontSize, nil, 9, 20, 1), IsEnabled)
 
     Header(category, L.optSectionInfoContent)
-    ContentCheckboxes(category, "info", enabled, IsEnabled)
+    ContentCheckboxes(category, "info", IsEnabled)
 end
 
 local function RegisterStatsPage(category)
